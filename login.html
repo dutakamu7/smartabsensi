@@ -1,174 +1,181 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartAbsensi - Halaman Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-        .accent-gradient { background-image: linear-gradient(to right, #6366f1, #3b82f6); }
-        .accent-gradient:hover { background-image: linear-gradient(to right, #4f46e5, #2563eb); }
-        .selected-role {
-            background-image: linear-gradient(to right, #6366f1, #3b82f6);
-            color: white;
-            border-color: #6366f1;
-            box-shadow: 0 4px 6px -1px rgba(99,102,241,0.5), 0 2px 4px -2px rgba(99,102,241,0.5);
-            transform: scale(1.02);
-        }
-        .date-time-box { position: absolute; top: 1rem; right: 1rem; z-index: 20; }
-        @media (max-width:640px) {
-            .date-time-box { top: 0.5rem; right: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.75rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartAbsensi - Halaman Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
+    .accent-gradient { background-image: linear-gradient(to right, #6366f1, #3b82f6); }
+    .accent-gradient:hover { background-image: linear-gradient(to right, #4f46e5, #2563eb); }
+    .selected-role {
+      background-image: linear-gradient(to right, #6366f1, #3b82f6);
+      color: white;
+      border-color: #6366f1;
+      box-shadow: 0 4px 6px -1px rgba(99,102,241,0.5), 0 2px 4px -2px rgba(99,102,241,0.5);
+      transform: scale(1.02);
+    }
+    .date-time-box { position: absolute; top: 1rem; right: 1rem; z-index: 20; }
+    @media (max-width:640px) {
+      .date-time-box { top: 0.5rem; right: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+      .w-full.max-w-lg { padding: 1.5rem; border-width: 4px; }
+      h1.text-3xl { font-size: 1.5rem; }
+      .grid.grid-cols-3 { grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.5rem; }
+      button[type="button"] { padding: 0.75rem !important; font-size: 0.9rem; }
+      input, select { font-size: 0.9rem !important; }
+      .accent-gradient { font-size: 1rem !important; }
+    }
+  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- JAM & TANGGAL -->
-    <div id="current-datetime" class="date-time-box bg-white p-3 rounded-xl shadow-lg border-b-2 border-indigo-300 text-sm font-semibold text-gray-700 transition duration-300">
-        Memuat Waktu...
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-10">
+
+  <!-- JAM & TANGGAL -->
+  <div id="current-datetime" class="date-time-box bg-white p-3 rounded-xl shadow-lg border-b-2 border-indigo-300 text-sm font-semibold text-gray-700 transition duration-300">
+    Memuat Waktu...
+  </div>
+
+  <!-- KONTEN LOGIN -->
+  <div class="w-full max-w-lg bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border-t-8 border-indigo-600 transition-all duration-300">
+    <div class="text-center mb-8">
+      <a href="index.html" class="flex items-center justify-center space-x-2 text-3xl font-extrabold text-[#6366f1]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span>SmartAbsensi</span>
+      </a>
+      <h1 class="text-3xl font-bold text-gray-900 mt-4">Login Sistem Absensi</h1>
+      <p class="text-gray-500 text-sm mt-1">Pilih peran Anda dan masukkan detail akun.</p>
     </div>
 
-    <!-- KONTEN LOGIN -->
-    <div class="w-full max-w-lg bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border-t-8 border-indigo-600">
-        <div class="text-center mb-8">
-            <a href="index.html" class="flex items-center justify-center space-x-2 text-3xl font-extrabold text-[#6366f1]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                </svg>
-                <span>SmartAbsensi</span>
-            </a>
-            <h1 class="text-3xl font-bold text-gray-900 mt-4">Login Sistem Absensi</h1>
-            <p class="text-gray-500 text-sm mt-1">Pilih peran Anda dan masukkan detail akun.</p>
+    <!-- FORM LOGIN -->
+    <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-6">
+      <div>
+        <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">Login Sebagai:</label>
+        <div class="grid grid-cols-3 sm:grid-cols-3 gap-3">
+          <button type="button" id="role-siswa" onclick="selectRole('siswa')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Siswa</button>
+          <button type="button" id="role-guru" onclick="selectRole('guru')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Guru</button>
+          <button type="button" id="role-admin" onclick="selectRole('admin')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Admin</button>
         </div>
+        <input type="hidden" id="selectedRole" value="siswa">
+      </div>
 
-        <!-- FORM LOGIN -->
-        <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-6">
-            <div>
-                <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">Login Sebagai:</label>
-                <div class="grid grid-cols-3 gap-3">
-                    <button type="button" id="role-siswa" onclick="selectRole('siswa')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Siswa</button>
-                    <button type="button" id="role-guru" onclick="selectRole('guru')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Guru</button>
-                    <button type="button" id="role-admin" onclick="selectRole('admin')" class="py-3 px-2 rounded-xl border-2 border-gray-300 text-gray-600 font-semibold text-sm transition duration-200">Admin</button>
-                </div>
-                <input type="hidden" id="selectedRole" value="siswa">
-            </div>
+      <div>
+        <label for="id_peserta" class="block text-sm font-semibold text-gray-700">ID / NIP / Nomor Peserta</label>
+        <input type="text" id="id_peserta" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+      </div>
 
-            <div>
-                <label for="id_peserta" class="block text-sm font-semibold text-gray-700">ID / NIP / Nomor Peserta</label>
-                <input type="text" id="id_peserta" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-            </div>
+      <div>
+        <label for="nama_lengkap" class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
+        <input type="text" id="nama_lengkap" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+      </div>
 
-            <div>
-                <label for="nama_lengkap" class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
-                <input type="text" id="nama_lengkap" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-            </div>
+      <div id="subjectField" class="hidden">
+        <label for="subject" class="block text-sm font-semibold text-gray-700">Mata Pelajaran</label>
+        <select id="subject" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+          <option value="" disabled selected>Pilih Mata Pelajaran...</option>
+          <option value="Calculus">Calculus</option>
+          <option value="Fisika">Fisika</option>
+          <option value="Kimia">Kimia</option>
+          <option value="Log_Math">Log Math</option>
+          <option value="Tambahan">Mata Pelajaran Tambahan</option>
+        </select>
+      </div>
 
-            <div id="subjectField" class="hidden">
-                <label for="subject" class="block text-sm font-semibold text-gray-700">Mata Pelajaran</label>
-                <select id="subject" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    <option value="" disabled selected>Pilih Mata Pelajaran...</option>
-                    <option value="Calculus">Calculus</option>
-                    <option value="Fisika">Fisika</option>
-                    <option value="Kimia">Kimia</option>
-                    <option value="Log_Math">Log Math</option>
-                    <option value="Tambahan">Mata Pelajaran Tambahan</option>
-                </select>
-            </div>
-
-            <div id="passwordField">
-                <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
-                <input type="password" id="password" required placeholder="Gunakan: 'Telkom University Bandung'" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                <div class="text-right mt-2">
-                    <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">Lupa Password?</a>
-                </div>
-            </div>
-
-            <button type="submit" class="w-full py-3 rounded-xl text-white font-bold text-lg shadow-xl transition duration-300 accent-gradient hover:shadow-2xl transform hover:scale-[1.01]">Masuk ke Sistem</button>
-        </form>
-
-        <div class="mt-6 text-center text-sm">
-            <p class="text-gray-500">Bukan anggota?
-                <a href="index.html" class="font-medium text-indigo-600 hover:text-indigo-500">Kembali ke Beranda</a>
-            </p>
+      <div id="passwordField">
+        <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
+        <input type="password" id="password" required placeholder="Gunakan: 'Telkom University Bandung'" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+        <div class="text-right mt-2">
+          <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">Lupa Password?</a>
         </div>
+      </div>
+
+      <button type="submit" class="w-full py-3 rounded-xl text-white font-bold text-lg shadow-xl transition duration-300 accent-gradient hover:shadow-2xl transform hover:scale-[1.01]">Masuk ke Sistem</button>
+    </form>
+
+    <div class="mt-6 text-center text-sm">
+      <p class="text-gray-500">Bukan anggota?
+        <a href="index.html" class="font-medium text-indigo-600 hover:text-indigo-500">Kembali ke Beranda</a>
+      </p>
     </div>
+  </div>
 
-    <div id="message-box" class="fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl transition-opacity duration-300 opacity-0 z-50"></div>
+  <div id="message-box" class="fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-xl shadow-2xl transition-opacity duration-300 opacity-0 z-50"></div>
 
-    <script>
-        // 🕒 Waktu di pojok kanan atas
-        function updateClock() {
-            const now = new Date();
-            const dOpt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            const tOpt = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            document.getElementById('current-datetime').innerHTML =
-                `<span class="text-indigo-600">${now.toLocaleDateString('id-ID', dOpt)}</span><br><span class="font-mono text-lg">${now.toLocaleTimeString('id-ID', tOpt)}</span>`;
-        }
+  <script>
+    // 🕒 Waktu di pojok kanan atas
+    function updateClock() {
+      const now = new Date();
+      const dOpt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      const tOpt = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      document.getElementById('current-datetime').innerHTML =
+        `<span class="text-indigo-600">${now.toLocaleDateString('id-ID', dOpt)}</span><br><span class="font-mono text-lg">${now.toLocaleTimeString('id-ID', tOpt)}</span>`;
+    }
 
-        // 🔔 Pesan notifikasi
-        function showMessage(msg, dur=3000){
-            const box=document.getElementById('message-box');
-            box.textContent=msg;
-            box.classList.remove('opacity-0');
-            box.classList.add('opacity-100');
-            setTimeout(()=>{box.classList.remove('opacity-100');box.classList.add('opacity-0');},dur);
-        }
+    // 🔔 Pesan notifikasi
+    function showMessage(msg, dur = 3000) {
+      const box = document.getElementById('message-box');
+      box.textContent = msg;
+      box.classList.remove('opacity-0');
+      box.classList.add('opacity-100');
+      setTimeout(() => {
+        box.classList.remove('opacity-100');
+        box.classList.add('opacity-0');
+      }, dur);
+    }
 
-        // 🔹 Pilih peran
-        function selectRole(role){
-            document.getElementById('selectedRole').value=role;
-            const subj=document.getElementById('subjectField');
-            const idInput=document.getElementById('id_peserta');
-            document.querySelectorAll('.grid button').forEach(btn=>{
-                btn.classList.remove('selected-role');
-                btn.classList.add('bg-white','text-gray-600','border-gray-300');
-            });
-            const sel=document.getElementById(`role-${role}`);
-            sel.classList.add('selected-role');
-            sel.classList.remove('bg-white','text-gray-600','border-gray-300');
-            if(role==='admin') subj.classList.add('hidden'); else subj.classList.remove('hidden');
-            idInput.focus();
-        }
+    // 🔹 Pilih peran
+    function selectRole(role) {
+      document.getElementById('selectedRole').value = role;
+      const subj = document.getElementById('subjectField');
+      const idInput = document.getElementById('id_peserta');
+      document.querySelectorAll('.grid button').forEach(btn => {
+        btn.classList.remove('selected-role');
+        btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+      });
+      const sel = document.getElementById(`role-${role}`);
+      sel.classList.add('selected-role');
+      sel.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+      if (role === 'admin') subj.classList.add('hidden');
+      else subj.classList.remove('hidden');
+      idInput.focus();
+    }
 
-        // ⚙️ Logika login
-        function handleLogin(){
-            const role=document.getElementById('selectedRole').value;
-            const id=document.getElementById('id_peserta').value.trim();
-            const name=document.getElementById('nama_lengkap').value.trim();
-            const pass=document.getElementById('password').value;
-            const UNIVERSAL='Telkom University Bandung';
-            const subj=document.getElementById('subject')?.value||'';
+    // ⚙️ Logika login
+    function handleLogin() {
+      const role = document.getElementById('selectedRole').value;
+      const id = document.getElementById('id_peserta').value.trim();
+      const name = document.getElementById('nama_lengkap').value.trim();
+      const pass = document.getElementById('password').value;
+      const UNIVERSAL = 'Telkom University Bandung';
+      const subj = document.getElementById('subject')?.value || '';
 
-            // ➕ Admin hardcode login
-            if(role==='admin' && id==='101032530012' && name.toLowerCase()==='duta hilmy pratama' && pass===UNIVERSAL){
-                showMessage('Login Berhasil sebagai ADMIN...',1000);
-                return setTimeout(()=>window.location.assign('admin.html'),1000);
-            }
+      if (role === 'admin' && id === '101032530012' && name.toLowerCase() === 'duta hilmy pratama' && pass === UNIVERSAL) {
+        showMessage('Login Berhasil sebagai ADMIN...', 1000);
+        return setTimeout(() => window.location.assign('admin.html'), 1000);
+      }
 
-            // ➕ Ambil data dari localStorage
-            const users=JSON.parse(localStorage.getItem('users'))||[];
-            const user=users.find(u=>u.code===id);
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.code === id);
 
-            if(!user) return showMessage(`Login Gagal: ID ${id} belum terdaftar.`,4000);
-            if(user.name.toLowerCase()!==name.toLowerCase()) return showMessage(`Nama tidak sesuai.`,4000);
-            if(user.role!==role) return showMessage(`ID ini terdaftar sebagai ${user.role.toUpperCase()}.`,4000);
-            if(pass!==UNIVERSAL) return showMessage(`Password salah.`,4000);
-            if(role!=='admin' && !subj) return showMessage(`Silakan pilih Mata Pelajaran.`,4000);
+      if (!user) return showMessage(`Login Gagal: ID ${id} belum terdaftar.`, 4000);
+      if (user.name.toLowerCase() !== name.toLowerCase()) return showMessage(`Nama tidak sesuai.`, 4000);
+      if (user.role !== role) return showMessage(`ID ini terdaftar sebagai ${user.role.toUpperCase()}.`, 4000);
+      if (pass !== UNIVERSAL) return showMessage(`Password salah.`, 4000);
+      if (role !== 'admin' && !subj) return showMessage(`Silakan pilih Mata Pelajaran.`, 4000);
 
-            // ✅ Redirect ke dashboard sesuai role
-            const dashboard=role==='guru'?'guru.html':'murid.html';
-            showMessage(`Login Berhasil sebagai ${user.name} (${role.toUpperCase()})...`,1000);
-            setTimeout(()=>window.location.assign(dashboard),1000);
-        }
+      const dashboard = role === 'guru' ? 'guru.html' : 'murid.html';
+      showMessage(`Login Berhasil sebagai ${user.name} (${role.toUpperCase()})...`, 1000);
+      setTimeout(() => window.location.assign(dashboard), 1000);
+    }
 
-        window.onload=function(){
-            selectRole('siswa');
-            updateClock();
-            setInterval(updateClock,1000);
-        };
-    </script>
+    window.onload = function () {
+      selectRole('siswa');
+      updateClock();
+      setInterval(updateClock, 1000);
+    };
+  </script>
 </body>
 </html>
