@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -545,3 +546,552 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Admin Absensi Kelas</title>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color:#f4f7f9; }
+    .icon-lg { font-size: 2rem; line-height:1; }
+    .empty-state { text-align:center; padding:2rem; color:#9ca3af; }
+    .modal-overlay { background-color: rgba(0,0,0,0.7); }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    /* Message box */
+    #message-box { position: fixed; right: 20px; bottom: 20px; z-index: 60; background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); opacity: 0; transition: opacity 240ms; }
+    #message-box.show { opacity: 1; }
+  </style>
+</head>
+<body class="min-h-screen flex">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-gray-900 text-white p-6 flex flex-col hidden md:block">
+    <h1 class="text-2xl font-extrabold mb-8 text-indigo-400">ADMIN PRESENSI</h1>
+    <nav class="space-y-3 flex-grow">
+      <a href="#" class="flex items-center p-3 rounded-xl bg-indigo-600 font-semibold transition duration-200">
+        <span class="icon-lg mr-3">🏠</span> Dashboard
+      </a>
+      <a href="#pengumuman" class="flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-200">
+        <span class="icon-lg mr-3">📢</span> Pengumuman
+      </a>
+      <a href="#rekap" class="flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-200">
+        <span class="icon-lg mr-3">📄</span> Rekap Absensi
+      </a>
+
+      <!-- Tombol tes lokal -->
+      <button onclick="addMockAttendanceData()" class="mt-6 w-full bg-yellow-400 text-gray-900 py-2 rounded-xl font-semibold hover:bg-yellow-300">
+        🧪 TEST: Tambah Data Demo
+      </button>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+    <header class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Dashboard Utama Absensi</h2>
+      <div class="flex items-center space-x-4">
+        <div class="text-sm text-gray-600 text-right">
+          <p class="font-bold text-gray-800">Duta Hilmy Pratama</p>
+          <p class="text-xs font-mono text-indigo-600">NIP: 101032530012</p>
+          <p id="current-datetime" class="text-sm font-semibold mt-1"></p>
+        </div>
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-semibold">Logout</button>
+      </div>
+    </header>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white p-5 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-gray-500">Rata-Rata Hadir SISWA</p>
+          <span class="icon-lg text-indigo-500">🧑‍🎓</span>
+        </div>
+        <h3 id="kpi-kehadiran-siswa" class="text-4xl font-extrabold text-gray-900 mt-1">0.0%</h3>
+        <p id="kpi-siswa-desc" class="text-sm text-gray-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-gray-500">Rata-Rata Hadir GURU</p>
+          <span class="icon-lg text-blue-500">👨‍🏫</span>
+        </div>
+        <h3 id="kpi-kehadiran-guru" class="text-4xl font-extrabold text-gray-900 mt-1">0.0%</h3>
+        <p id="kpi-guru-desc" class="text-sm text-gray-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-gray-500">Total Alpha (Siswa) Hari Ini</p>
+          <span class="icon-lg text-red-500">❌</span>
+        </div>
+        <h3 id="kpi-alpha" class="text-4xl font-extrabold text-gray-900 mt-1">0</h3>
+        <p class="text-sm text-gray-400 mt-2"><span class="font-semibold">0</span> Siswa Kritis</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-medium text-gray-500">Total Pengajuan (Izin/Sakit)</p>
+          <span class="icon-lg text-yellow-500">📝</span>
+        </div>
+        <h3 id="kpi-izin-pending" class="text-4xl font-extrabold text-gray-900 mt-1">0</h3>
+        <p class="text-sm text-gray-400 mt-2"><span class="font-semibold">0</span> Pengajuan</p>
+      </div>
+    </div>
+
+   <!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+    <h3 class="text-xl font-bold mb-4">Tren Kehadiran Sekolah (Siswa & Guru)</h3>
+    <div class="chart-container">
+      <canvas id="kehadiranChart"></canvas>
+    </div>
+  </div>
+  <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+    <h3 class="text-xl font-bold mb-4">Rekap Status Harian</h3>
+    <div class="chart-container">
+      <canvas id="statusChart"></canvas>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Tambah Pengguna -->
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+      <h3 class="text-xl font-bold text-green-600 mb-4 flex items-center"><span class="mr-2">➕</span>Manajemen Pengguna Baru</h3>
+      <div class="flex space-x-2">
+        <button onclick="openAddUserModal('siswa')" class="flex-1 bg-green-500 text-white py-2 rounded-xl">Siswa Baru</button>
+        <button onclick="openAddUserModal('guru')" class="flex-1 bg-teal-500 text-white py-2 rounded-xl">Guru Baru</button>
+      </div>
+    </div>
+
+    <!-- Data Pengguna -->
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+      <h3 class="text-xl font-bold mb-4 text-gray-800">Data Pengguna Terdaftar (Siswa & Guru)</h3>
+
+      <div id="emptyUsersState" class="empty-state">
+        <span class="icon-lg block mb-2">📋</span>
+        <p class="text-lg font-semibold">Belum Ada Pengguna Didaftarkan.</p>
+        <p class="text-sm">Gunakan tombol 'Siswa Baru' atau 'Guru Baru' untuk menambahkan.</p>
+      </div>
+
+      <div class="overflow-x-auto hidden" id="usersTableContainer">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Peran</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">No. Peserta</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Detail</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pengumuman -->
+    <section id="pengumuman" class="bg-white p-6 rounded-2xl shadow mb-8">
+      <h3 class="text-2xl font-bold text-indigo-600 mb-4 flex items-center"><span class="mr-2">📢</span> Kelola Pengumuman</h3>
+      <form id="formPengumuman" onsubmit="tambahPengumuman(event)" class="space-y-3">
+        <input type="text" id="judulPengumuman" placeholder="Judul pengumuman" class="w-full border p-2 rounded" required>
+        <textarea id="isiPengumuman" placeholder="Isi pengumuman..." class="w-full border p-2 rounded" required></textarea>
+        <div class="flex justify-end">
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl">Kirim Pengumuman</button>
+        </div>
+      </form>
+
+      <div class="mt-6">
+        <h4 class="text-lg font-semibold mb-2">Daftar Pengumuman</h4>
+        <ul id="daftarPengumuman" class="space-y-3"></ul>
+      </div>
+    </section>
+
+    <!-- Rekap Absensi -->
+    <section id="rekap" class="bg-white p-6 rounded-2xl shadow mb-20">
+      <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center"><span class="mr-2">📊</span> Rekap Absensi</h3>
+
+      <table class="w-full border mb-4" id="tabelRekap">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Role</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Mata Pelajaran</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Waktu Absen</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+          </tr>
+        </thead>
+        <tbody id="rekapBody">
+          <tr><td colspan="5" class="text-center text-gray-400 py-6">Belum ada data absensi.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="flex space-x-3">
+        <button id="btnExcel" onclick="downloadExcel()" class="bg-green-600 text-white px-4 py-2 rounded-xl" disabled>Download Excel</button>
+        <button id="btnPDF" onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded-xl" disabled>Download PDF</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Tambah Pengguna -->
+  <div id="userModal" class="fixed inset-0 hidden items-center justify-center modal-overlay z-50">
+    <div class="bg-white w-full max-w-lg p-6 rounded-2xl shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h3 id="modalTitle" class="text-2xl font-bold text-gray-800">Tambah Pengguna</h3>
+        <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
+      </div>
+      <form id="userForm" onsubmit="saveUser(event)" class="space-y-3">
+        <input type="hidden" id="userRole">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+          <input id="userName" class="w-full border rounded-lg p-2" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">ID (NIP / NIS)</label>
+          <input id="userCode" class="w-full border rounded-lg p-2" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Detail (contoh: Kelas / Mata Pelajaran)</label>
+          <input id="userDetail" class="w-full border rounded-lg p-2">
+        </div>
+        <div class="flex justify-end">
+          <button type="button" onclick="closeUserModal()" class="px-3 py-2 bg-gray-200 rounded-xl mr-2">Batal</button>
+          <button type="submit" class="px-3 py-2 bg-indigo-600 text-white rounded-xl">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Message box -->
+  <div id="message-box"></div>
+
+  <script>
+    /* -------------------------
+       Helper: pesan notifikasi
+       ------------------------- */
+    function showMessage(text, ms = 3000) {
+      const box = document.getElementById('message-box');
+      box.textContent = text;
+      box.classList.add('show');
+      clearTimeout(box._t);
+      box._t = setTimeout(() => box.classList.remove('show'), ms);
+    }
+
+    /* -------------------------
+       Jam
+       ------------------------- */
+    function updateClock() {
+      document.getElementById('current-datetime').textContent = new Date().toLocaleString('id-ID');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* -------------------------
+       Logout: arahkan ke index.html
+       ------------------------- */
+    function logout() {
+      if (!confirm('Yakin ingin logout dari Dashboard Admin?')) return;
+      localStorage.removeItem('adminLogin');
+      showMessage('Logout berhasil — mengarahkan ke halaman utama...', 1200);
+      setTimeout(() => window.location.href = 'index.html', 700);
+    }
+
+    /* -------------------------
+       USERS (localStorage)
+       ------------------------- */
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    const dataBody = document.getElementById('usersTableBody');
+    const emptyUsersState = document.getElementById('emptyUsersState');
+    const usersTableContainer = document.getElementById('usersTableContainer');
+
+    function renderUsers() {
+      dataBody.innerHTML = '';
+      if (!users || users.length === 0) {
+        emptyUsersState.classList.remove('hidden');
+        usersTableContainer.classList.add('hidden');
+        return;
+      }
+      emptyUsersState.classList.add('hidden');
+      usersTableContainer.classList.remove('hidden');
+
+      users.forEach((u, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${escapeHtml(u.role)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHtml(u.name)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">${escapeHtml(u.code)}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${escapeHtml(u.detail || '')}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium"><button onclick="hapusUser(${i})" class="text-red-600 hover:text-red-900 font-semibold">Hapus</button></td>
+        `;
+        dataBody.appendChild(row);
+      });
+    }
+
+    function openAddUserModal(role) {
+      document.getElementById('userModal').classList.remove('hidden');
+      document.getElementById('userRole').value = role;
+      document.getElementById('modalTitle').textContent = role === 'guru' ? 'Tambah Guru' : 'Tambah Siswa';
+      document.getElementById('userForm').reset();
+    }
+    function closeUserModal() { document.getElementById('userModal').classList.add('hidden'); }
+
+    function saveUser(e) {
+      e.preventDefault();
+      const role = document.getElementById('userRole').value || 'siswa';
+      const name = document.getElementById('userName').value.trim();
+      const code = document.getElementById('userCode').value.trim();
+      const detail = document.getElementById('userDetail').value.trim();
+      if (!name || !code) { showMessage('Nama dan ID wajib diisi.', 3000); return; }
+
+      // cegah duplikat ID
+      if (users.some(u => u.code === code)) {
+        showMessage(`ID ${code} sudah terdaftar.`, 3500);
+        return;
+      }
+
+      users.push({ role, name, code, detail });
+      localStorage.setItem('users', JSON.stringify(users));
+      closeUserModal();
+      renderUsers();
+      showMessage(`Pengguna ${name} (${role}) berhasil ditambahkan.`, 3500);
+      // update KPI/reports
+      updateKPIandCharts();
+    }
+
+    function hapusUser(i) {
+      if (!confirm('Hapus pengguna ini?')) return;
+      const removed = users.splice(i, 1)[0];
+      localStorage.setItem('users', JSON.stringify(users));
+      renderUsers();
+      showMessage(`${removed.name} dihapus.`, 2500);
+      updateKPIandCharts();
+    }
+
+    /* -------------------------
+       Pengumuman (localStorage)
+       ------------------------- */
+    let pengumuman = JSON.parse(localStorage.getItem('pengumuman')) || [];
+    const daftarPengumumanEl = document.getElementById('daftarPengumuman');
+
+    function renderPengumuman() {
+      if (!pengumuman || pengumuman.length === 0) {
+        daftarPengumumanEl.innerHTML = "<p class='text-gray-400'>Belum ada pengumuman.</p>";
+        return;
+      }
+      daftarPengumumanEl.innerHTML = pengumuman.map((p,i) => `
+        <li class="border rounded-lg p-3 flex justify-between items-start">
+          <div>
+            <h5 class="font-bold text-indigo-700">${escapeHtml(p.judul)}</h5>
+            <p class="text-gray-700 text-sm mb-1">${escapeHtml(p.isi)}</p>
+            <span class="text-xs text-gray-400">${new Date(p.tanggal).toLocaleString('id-ID')}</span>
+          </div>
+          <button onclick="hapusPengumuman(${i})" class="text-red-500 font-bold text-sm">Hapus</button>
+        </li>
+      `).join('');
+    }
+
+    function tambahPengumuman(e) {
+      e.preventDefault();
+      const judul = document.getElementById('judulPengumuman').value.trim();
+      const isi = document.getElementById('isiPengumuman').value.trim();
+      if (!judul || !isi) { showMessage('Judul & isi pengumuman wajib diisi.', 3000); return; }
+      pengumuman.push({ judul, isi, tanggal: new Date().toISOString() });
+      localStorage.setItem('pengumuman', JSON.stringify(pengumuman));
+      e.target.reset();
+      renderPengumuman();
+      showMessage('Pengumuman terkirim ke dashboard guru & murid (lokal).', 3000);
+    }
+
+    function hapusPengumuman(i) {
+      if (!confirm('Hapus pengumuman ini?')) return;
+      pengumuman.splice(i,1);
+      localStorage.setItem('pengumuman', JSON.stringify(pengumuman));
+      renderPengumuman();
+      showMessage('Pengumuman dihapus.', 2000);
+    }
+
+    /* -------------------------
+       REKAP ABSENSI (localStorage)
+       struktur: { nama, role, mapel, waktu, status }
+       ------------------------- */
+    let rekap = JSON.parse(localStorage.getItem('rekap')) || [];
+    const rekapBody = document.getElementById('rekapBody');
+    const btnExcel = document.getElementById('btnExcel');
+    const btnPDF = document.getElementById('btnPDF');
+
+    function renderRekap() {
+      rekapBody.innerHTML = '';
+      if (!rekap || rekap.length === 0) {
+        rekapBody.innerHTML = "<tr><td colspan='5' class='text-center text-gray-400 py-6'>Belum ada data absensi.</td></tr>";
+        btnExcel.disabled = true;
+        btnPDF.disabled = true;
+        updateKPIandCharts();
+        return;
+      }
+
+      btnExcel.disabled = false;
+      btnPDF.disabled = false;
+
+      rekap.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHtml(entry.nama)}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${escapeHtml(entry.role)}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${escapeHtml(entry.mapel)}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${escapeHtml(entry.waktu)}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-sm ${entry.status === 'Hadir' ? 'text-green-600' : entry.status === 'Terlambat' ? 'text-yellow-600' : 'text-red-600'} font-semibold">${escapeHtml(entry.status)}</td>
+        `;
+        rekapBody.appendChild(tr);
+      });
+
+      updateKPIandCharts();
+    }
+
+    function saveRekapEntry(entry) {
+      rekap.push(entry);
+      localStorage.setItem('rekap', JSON.stringify(rekap));
+      renderRekap();
+      showMessage('Data absensi baru ditambahkan (lokal).', 2200);
+    }
+
+    /* Demo: tambahkan beberapa data absensi utk testing */
+    function addMockAttendanceData() {
+      // contoh entry demo: ambil user terdaftar kalau ada, atau buat demo
+      const now = new Date();
+      const time = now.toLocaleString('id-ID', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      const demo = [
+        { nama: 'Risa Amelia', role: 'siswa', mapel: 'Kalkulus', waktu: time, status: 'Hadir' },
+        { nama: 'Joko P.', role: 'siswa', mapel: 'Kimia', waktu: time, status: 'Alpha' },
+        { nama: 'Dewi Sinta', role: 'siswa', mapel: 'Fisika', waktu: time, status: 'Izin' },
+        { nama: 'Bapak Joni', role: 'guru', mapel: 'Fisika', waktu: time, status: 'Hadir' },
+        { nama: 'Ibu Nisa', role: 'guru', mapel: 'Bahasa Inggris', waktu: time, status: 'Terlambat' }
+      ];
+      demo.forEach(d => rekap.push(d));
+      localStorage.setItem('rekap', JSON.stringify(rekap));
+      renderRekap();
+      showMessage('5 data absensi demo berhasil ditambahkan.', 3000);
+    }
+
+    /* -------------------------
+       Download Excel / PDF
+       ------------------------- */
+    function downloadExcel() {
+      if (!rekap || rekap.length === 0) return showMessage('Belum ada data rekap untuk diunduh.', 2500);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rekap.map(r => ({
+        Nama: r.nama, Role: r.role, Mata_Pelajaran: r.mapel, Waktu_Absen: r.waktu, Status: r.status
+      })));
+      XLSX.utils.book_append_sheet(wb, ws, 'Rekap Absensi');
+      XLSX.writeFile(wb, `Rekap_Absensi_${new Date().toISOString().slice(0,10)}.xlsx`);
+      showMessage('File Excel berhasil dibuat.', 2500);
+    }
+
+    function downloadPDF() {
+      if (!rekap || rekap.length === 0) return showMessage('Belum ada data rekap untuk diunduh.', 2500);
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'pt' });
+      doc.setFontSize(12);
+      doc.text('Rekap Absensi', 40, 40);
+      let y = 70;
+      const lineHeight = 18;
+      doc.setFontSize(10);
+      rekap.forEach((r, idx) => {
+        const text = `${idx+1}. ${r.nama} | ${r.role} | ${r.mapel} | ${r.waktu} | ${r.status}`;
+        doc.text(text, 40, y);
+        y += lineHeight;
+        if (y > doc.internal.pageSize.height - 40) {
+          doc.addPage();
+          y = 40;
+        }
+      });
+      doc.save(`Rekap_Absensi_${new Date().toISOString().slice(0,10)}.pdf`);
+      showMessage('File PDF berhasil dibuat.', 2500);
+    }
+
+    /* -------------------------
+       Charts & KPI updater
+       ------------------------- */
+    const kehadiranChart = new Chart(document.getElementById('kehadiranChart'), {
+      type: 'line',
+      data: {
+        labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        datasets: [
+          { label: 'Kehadiran Siswa (%)', data: [90,88,92,95,90,89,93,94,91,95,94,92], borderColor: '#4f46e5', fill:false, tension:0.4 },
+          { label: 'Kehadiran Guru (%)', data: [98,97,99,98,100,99,98,97,99,100,98,99], borderColor: '#10b981', fill:false, tension:0.4 }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}} }
+    });
+
+    const statusChart = new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: { labels:['Hadir','Izin','Sakit','Alpha'], datasets:[{ data:[0,0,0,0], backgroundColor:['#10b981','#f59e0b','#3b82f6','#ef4444'] }] },
+      options: { responsive:true, maintainAspectRatio:false }
+    });
+
+    function updateKPIandCharts() {
+      // KPI calculations based on users and rekap
+      const totalSiswa = users.filter(u => u.role === 'siswa').length;
+      const totalGuru = users.filter(u => u.role === 'guru').length;
+
+      // Unique hadir counts (today's presence not implemented by date filter; using whole dataset)
+      const hadirSiswa = rekap.filter(r => r.role === 'siswa' && (r.status === 'Hadir' || r.status === 'Terlambat')).length;
+      const hadirGuru = rekap.filter(r => r.role === 'guru' && (r.status === 'Hadir' || r.status === 'Terlambat')).length;
+      const alphaSiswa = rekap.filter(r => r.role === 'siswa' && r.status === 'Alpha').length;
+      const izinCount = rekap.filter(r => r.status === 'Izin').length;
+      const sakitCount = rekap.filter(r => r.status === 'Sakit').length;
+
+      const rateSiswa = totalSiswa > 0 ? ((hadirSiswa / totalSiswa) * 100).toFixed(1) : '0.0';
+      const rateGuru = totalGuru > 0 ? ((hadirGuru / totalGuru) * 100).toFixed(1) : '0.0';
+
+      document.getElementById('kpi-kehadiran-siswa').textContent = `${rateSiswa}%`;
+      document.getElementById('kpi-kehadiran-guru').textContent = `${rateGuru}%`;
+
+      document.getElementById('kpi-siswa-desc').innerHTML = totalSiswa > 0 ? `<span class="font-semibold">${Math.max(0,totalSiswa - hadirSiswa)}</span> Siswa Tidak Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
+      document.getElementById('kpi-guru-desc').innerHTML = totalGuru > 0 ? `<span class="font-semibold">${Math.max(0,totalGuru - hadirGuru)}</span> Guru Tidak Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
+
+      document.getElementById('kpi-alpha').textContent = alphaSiswa.toString();
+      document.getElementById('kpi-izin-pending').textContent = izinCount.toString();
+
+      // Update donut chart with current counts
+      statusChart.data.datasets[0].data = [hadirSiswa, izinCount, sakitCount, alphaSiswa];
+      statusChart.update();
+    }
+
+    /* -------------------------
+       Utility: escape HTML to avoid injection (basic)
+       ------------------------- */
+    function escapeHtml(str) {
+      if (!str && str !== 0) return '';
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    /* -------------------------
+       Init: render stored data
+       ------------------------- */
+    renderUsers();
+    renderPengumuman();
+    renderRekap();
+    updateKPIandCharts();
+
+    // Ensure charts reflect initial rekap counts
+    // (statusChart updated inside updateKPIandCharts)
+  </script>
+</body>
+</html>
+>>>>>>> 79cf2e2c9e7c212db0ff741c60bec7e9df5e964e
