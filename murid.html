@@ -1,291 +1,543 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard Murid - SmartAbsensi</title>
+  <title>Dashboard Murid – Absensi</title>
 
-  <!-- TailwindCSS + Chart.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #f4f7f9; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
-    .small { font-size: 0.85rem; color: #6b7280; }
-    .required { color: #ef4444; margin-left: 4px; }
-    .chart-container { height: 300px; position: relative; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#f3f6fb 0%, #eef2f7 100%); }
+    .card { background: white; border-radius: 12px; box-shadow: 0 6px 24px rgba(15,23,42,0.06); }
+    .small-muted { font-size: 0.85rem; color: #6b7280; }
+    .avatar { width:42px; height:42px; border-radius:999px; background:linear-gradient(135deg,#60a5fa,#7c3aed); display:inline-flex; align-items:center; justify-content:center; color:white; font-weight:700; }
+    /* responsive chart height */
+    .chart-box { height:220px; }
+    @media(min-width:1024px){ .chart-box{ height:300px; } }
+
+    /* minimal file preview */
+    .file-thumb { max-width:100%; max-height:80px; object-fit:cover; border-radius:8px; }
+    .btn-primary { background: linear-gradient(90deg,#2563eb,#7c3aed); color:white; }
   </style>
 </head>
 <body class="min-h-screen flex">
 
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-white p-6 hidden md:block">
-    <h1 class="text-2xl font-extrabold mb-8 text-indigo-400">MURID • SmartAbsensi</h1>
-    <nav class="space-y-3">
-      <button onclick="showTab('dashboard')" class="w-full text-left p-3 rounded-xl bg-indigo-600 font-semibold">Dashboard</button>
-      <button onclick="showTab('absen')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Absensi Manual</button>
-      <button onclick="showTab('statistik')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Statistik Kehadiran</button>
-      <button onclick="showTab('materi')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Materi dari Guru</button>
-      <button onclick="showTab('tugas')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Tugas dari Guru</button>
-      <div class="mt-6">
-        <button onclick="logout()" class="w-full bg-red-500 hover:bg-red-600 p-3 rounded-xl font-semibold">Logout</button>
-        <button id="darkToggle" onclick="toggleDark()" class="w-full mt-3 bg-gray-700 hover:bg-gray-600 p-2 rounded-xl text-sm">Toggle Dark Mode</button>
-      </div>
+  <aside class="w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white p-6 hidden md:block">
+    <div class="mb-6">
+      <h1 class="text-2xl font-extrabold">MURID</h1>
+      <p class="text-xs text-slate-300 mt-1">Portal Absensi & Materi</p>
+    </div>
+
+    <nav class="space-y-2">
+      <button onclick="showPage('dashboard')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">🏠 Dashboard</button>
+      <button onclick="showPage('absensi')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">🕘 Absensi</button>
+      <button onclick="showPage('statistik')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">📈 Statistik</button>
+      <button onclick="showPage('tugas')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">📝 Tugas</button>
+      <button onclick="showPage('materi')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">📚 Materi</button>
+      <button onclick="showPage('pengumuman')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5">📢 Pengumuman</button>
+      <button onclick="logout()" class="mt-6 w-full bg-red-600 text-white py-2 rounded-lg">Keluar</button>
     </nav>
+
+    <div class="mt-8 text-xs text-slate-400">
+      <div id="userSmall" class="flex items-center space-x-3">
+        <div class="avatar" id="avatarInitial">U</div>
+        <div>
+          <div id="userNameSmall" class="text-sm font-semibold">Nama Murid</div>
+          <div class="small-muted" id="userRoleSmall">Kelas - NIS</div>
+        </div>
+      </div>
+    </div>
   </aside>
 
   <!-- MAIN -->
   <main class="flex-1 p-6 md:p-10 overflow-y-auto">
-    <header class="flex justify-between items-center mb-6">
+    <header class="flex items-center justify-between mb-6">
       <div>
-        <h2 id="pageTitle" class="text-2xl font-bold text-gray-800">Dashboard Murid</h2>
-        <p id="welcome" class="text-sm text-gray-500 mt-1">Memuat data...</p>
+        <h2 id="mainGreeting" class="text-3xl font-bold">Halo, Murid!</h2>
+        <p class="small-muted">Selamat datang di dashboardmu — cek absensi, tugas, materi, dan pengumuman.</p>
       </div>
-      <div class="text-right">
-        <div id="clock" class="text-sm text-gray-600 font-mono">--:--:--</div>
-        <div id="today" class="text-xs text-gray-400">Loading date</div>
+
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <div id="currentDateTime" class="font-medium"></div>
+          <div class="small-muted">Waktu lokal</div>
+        </div>
+        <div id="profileCompact" class="flex items-center space-x-3">
+          <div class="avatar" id="avatarTop">M</div>
+        </div>
       </div>
     </header>
 
-    <!-- DASHBOARD -->
-    <section id="tab-dashboard" class="tab card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Ringkasan Hari Ini</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 card">
-          <p class="small">Status Absen</p>
-          <h3 id="statusAbsen" class="text-2xl font-bold mt-2 text-green-600">Belum Absen</h3>
+    <!-- PAGES: dashboard, absensi, statistik, tugas, materi, pengumuman -->
+    <section id="page-dashboard" class="page">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="small-muted">Hadir Hari Ini</div>
+              <div id="card-hadir" class="text-2xl font-bold">-</div>
+            </div>
+            <div class="text-3xl">✅</div>
+          </div>
+          <p class="small-muted mt-3">Status absensi terkini kamu</p>
         </div>
-        <div class="p-4 card">
-          <p class="small">Jumlah Tugas</p>
-          <h3 id="countTugas" class="text-2xl font-bold mt-2">0</h3>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="small-muted">Tidak Hadir</div>
+              <div id="card-alpha" class="text-2xl font-bold">-</div>
+            </div>
+            <div class="text-3xl">🚫</div>
+          </div>
+          <p class="small-muted mt-3">Jumlah absen tidak hadir</p>
         </div>
-        <div class="p-4 card">
-          <p class="small">Materi Baru</p>
-          <h3 id="countMateri" class="text-2xl font-bold mt-2">0</h3>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="small-muted">Kehadiran (%)</div>
+              <div id="card-rate" class="text-2xl font-bold">-</div>
+            </div>
+            <div class="text-3xl">📊</div>
+          </div>
+          <p class="small-muted mt-3">Persentase kehadiran selama periode</p>
         </div>
       </div>
 
-      <div class="mt-6">
-        <h4 class="font-semibold mb-2">Progress Belajar</h4>
-        <div class="w-full bg-gray-200 rounded-full h-3">
-          <div id="progressBar" class="bg-indigo-600 h-3 rounded-full" style="width: 0%;"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="card p-5 lg:col-span-2">
+          <h3 class="font-bold mb-3">Grafik Kehadiran 7 Hari Terakhir</h3>
+          <div class="chart-box">
+            <canvas id="chart7days"></canvas>
+          </div>
         </div>
-        <p id="progressText" class="small mt-2">0% tugas dikumpulkan</p>
+
+        <div class="card p-5">
+          <h3 class="font-bold mb-3">Pengumuman Terbaru</h3>
+          <ul id="announcementsList" class="space-y-3 small-muted"></ul>
+        </div>
       </div>
     </section>
 
-    <!-- ABSENSI -->
-    <section id="tab-absen" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Input Absensi Manual</h3>
-      <form id="formAbsen" onsubmit="submitAbsen(event)" class="space-y-4">
-        <div>
-          <label class="block font-medium">Nama Murid</label>
-          <input id="a_nama" class="w-full border p-2 rounded bg-gray-50" readonly>
+    <!-- Absensi -->
+    <section id="page-absensi" class="page hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="card p-5 lg:col-span-2">
+          <h3 class="font-bold mb-3">Kirim Absensi Manual</h3>
+
+          <form id="absensiForm" class="space-y-3" onsubmit="submitAbsensi(event)">
+            <div>
+              <label class="block small-muted">Nama</label>
+              <input id="absensiNama" class="w-full border rounded-lg p-2" required readonly>
+            </div>
+            <div>
+              <label class="block small-muted">Tanggal</label>
+              <input id="absensiTanggal" class="w-full border rounded-lg p-2" readonly>
+            </div>
+            <div>
+              <label class="block small-muted">Jam</label>
+              <input id="absensiJam" class="w-full border rounded-lg p-2" readonly>
+            </div>
+            <div>
+              <label class="block small-muted">Mata Pelajaran (opsional)</label>
+              <input id="absensiMapel" class="w-full border rounded-lg p-2" placeholder="Contoh: Matematika">
+            </div>
+            <div>
+              <label class="block small-muted">Status</label>
+              <select id="absensiStatus" class="w-full border rounded-lg p-2">
+                <option value="Hadir">Hadir</option>
+                <option value="Terlambat">Terlambat</option>
+                <option value="Izin">Izin</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Alpha">Alpha</option>
+              </select>
+            </div>
+            <div>
+              <label class="block small-muted">Unggah bukti (foto/pdf) — opsional</label>
+              <input id="absensiBukti" type="file" accept="image/*,.pdf" class="w-full">
+              <div id="previewBukti" class="mt-2"></div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <button type="submit" class="btn-primary px-4 py-2 rounded-lg">Kirim Absensi</button>
+              <button type="button" onclick="resetAbsensiForm()" class="px-4 py-2 rounded-lg border">Reset</button>
+            </div>
+            <p id="absensiNote" class="small-muted mt-2"></p>
+          </form>
         </div>
-        <div>
-          <label class="block font-medium">Kelas / NISN (opsional)</label>
-          <input id="a_kelas" class="w-full border p-2 rounded">
+
+        <div class="card p-5">
+          <h3 class="font-bold mb-3">Riwayat Singkat</h3>
+          <div id="miniHistory" class="space-y-2 small-muted"></div>
         </div>
-        <div>
-          <label class="block font-medium">Jam Absen</label>
-          <input id="a_waktu" class="w-full border p-2 rounded bg-gray-50" readonly>
-        </div>
-        <div>
-          <label class="block font-medium">Keterangan <span class="required">*</span></label>
-          <select id="a_status" class="w-full border p-2 rounded" required>
-            <option value="">Pilih...</option>
-            <option>Hadir</option>
-            <option>Izin</option>
-            <option>Sakit</option>
-            <option>Alpha</option>
-          </select>
-        </div>
-        <div>
-          <label class="block font-medium">Upload Foto Bukti <span class="required">*</span></label>
-          <input id="a_foto" type="file" accept="image/*" class="w-full" required>
-        </div>
-        <button id="btnAbsen" class="bg-indigo-600 text-white px-4 py-2 rounded" type="submit">Absen Sekarang</button>
-      </form>
-      <p id="absenNote" class="small mt-3 text-green-600"></p>
+      </div>
     </section>
 
-    <!-- STATISTIK -->
-    <section id="tab-statistik" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Statistik Absensi Saya</h3>
-      <div class="chart-container mb-4"><canvas id="chartStat"></canvas></div>
-      <table class="w-full text-sm small">
-        <thead><tr class="text-left text-gray-500"><th>Tanggal</th><th>Jam</th><th>Status</th></tr></thead>
-        <tbody id="tableStat"></tbody>
-      </table>
+    <!-- Statistik -->
+    <section id="page-statistik" class="page hidden">
+      <div class="card p-5 mb-6">
+        <h3 class="font-bold mb-3">Statistik Kehadiran</h3>
+        <div id="fullHistory" class="small-muted"></div>
+      </div>
     </section>
 
-    <!-- MATERI -->
-    <section id="tab-materi" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Materi dari Guru</h3>
-      <input id="searchMateri" placeholder="Cari materi / mapel..." class="border p-2 rounded w-full mb-3" oninput="renderMateri()">
-      <ul id="listMateri" class="space-y-3 small"></ul>
+    <!-- Tugas -->
+    <section id="page-tugas" class="page hidden">
+      <div class="card p-5">
+        <h3 class="font-bold mb-3">Tugas dari Guru</h3>
+        <div id="tugasList" class="space-y-3 small-muted"></div>
+        <div id="tugasLoadError" class="text-red-500 mt-3"></div>
+      </div>
     </section>
 
-    <!-- TUGAS -->
-    <section id="tab-tugas" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Tugas dari Guru</h3>
-      <ul id="listTugas" class="space-y-3 small"></ul>
+    <!-- Materi -->
+    <section id="page-materi" class="page hidden">
+      <div class="card p-5">
+        <h3 class="font-bold mb-3">Materi Pembelajaran</h3>
+        <div id="materiList" class="space-y-3 small-muted"></div>
+        <div id="materiLoadError" class="text-red-500 mt-3"></div>
+      </div>
     </section>
 
+    <!-- Pengumuman -->
+    <section id="page-pengumuman" class="page hidden">
+      <div class="card p-5">
+        <h3 class="font-bold mb-3">Pengumuman</h3>
+        <ul id="fullAnnouncements" class="space-y-3 small-muted"></ul>
+      </div>
+    </section>
   </main>
 
-  <!-- Message Box -->
-  <div id="msgBox" class="fixed right-6 bottom-6 p-4 rounded shadow-lg bg-gray-900 text-white opacity-0 transition-opacity"></div>
+  <!-- Simple login modal if not logged in -->
+  <div id="loginModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg w-96">
+      <h3 class="font-bold mb-3">Masuk sebagai Murid</h3>
+      <form id="loginForm" onsubmit="doLogin(event)" class="space-y-3">
+        <div>
+          <label class="small-muted">Nama lengkap</label>
+          <input id="loginName" class="w-full border rounded-lg p-2" required>
+        </div>
+        <div>
+          <label class="small-muted">Keterangan (opsional: kelas / NIS)</label>
+          <input id="loginDetail" class="w-full border rounded-lg p-2">
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeLogin()" class="px-3 py-2 rounded-lg border">Batal</button>
+          <button class="btn-primary px-3 py-2 rounded-lg">Masuk</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <script>
-    // --- UTIL ---
-    const showMsg = (msg, ms=2500)=>{const b=document.getElementById('msgBox');b.textContent=msg;b.style.opacity=1;setTimeout(()=>b.style.opacity=0,ms);}
-    const save = (k,d)=>localStorage.setItem(k,JSON.stringify(d));
-    const read = (k)=>JSON.parse(localStorage.getItem(k)||'[]');
-    const uid=(p='id')=>p+'_'+Date.now();
+<script>
+/* ---------- Utilities & init ---------- */
+function $(id){return document.getElementById(id);}
 
-    // --- LOGIN VALIDATION ---
-    const SiswaName = localStorage.getItem('loginName') || 'Siswa';
-    document.getElementById('welcome').textContent = `Halo, ${SiswaName} 👋`;
-    document.getElementById('a_nama').value = SiswaName;
+let rekap = JSON.parse(localStorage.getItem('rekap')) || []; // shared with admin
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-    // --- CLOCK ---
-    function updateClock(){
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
-      document.getElementById('today').textContent = now.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+// show/hide page
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  $('page-'+name).classList.remove('hidden');
+  // update chart or lists if needed
+  if(name === 'dashboard') renderDashboard();
+  if(name === 'absensi') prepAbsensiForm();
+  if(name === 'tugas') loadTugas();
+  if(name === 'materi') loadMateri();
+  if(name === 'statistik') renderFullHistory();
+  if(name === 'pengumuman') renderFullAnnouncements();
+}
+
+// clock
+function updateDateTime(){
+  $('currentDateTime').textContent = new Date().toLocaleString('id-ID');
+}
+setInterval(updateDateTime,1000);
+updateDateTime();
+
+/* ---------- Login handling ---------- */
+function openLogin(){
+  $('loginModal').classList.remove('hidden');
+}
+function closeLogin(){
+  $('loginModal').classList.add('hidden');
+}
+function doLogin(e){
+  e.preventDefault();
+  const name = $('loginName').value.trim();
+  const detail = $('loginDetail').value.trim();
+  if(!name) return alert('Nama harus diisi');
+  currentUser = { name, detail };
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  closeLogin();
+  applyUserToUI();
+  showPage('dashboard');
+}
+function logout(){
+  if(!confirm('Yakin ingin logout?')) return;
+  localStorage.removeItem('currentUser');
+  currentUser = null;
+  applyUserToUI();
+  openLogin();
+}
+
+/* ---------- apply user ---------- */
+function applyUserToUI(){
+  const name = currentUser?.name || 'Murid';
+  const detail = currentUser?.detail || '';
+  $('mainGreeting').textContent = currentUser ? `Halo, ${name}!` : 'Halo, Murid!';
+  $('userNameSmall').textContent = currentUser ? name : 'Belum masuk';
+  $('userRoleSmall').textContent = currentUser ? detail : '';
+  $('avatarInitial').textContent = (name[0] || 'M').toUpperCase();
+  $('avatarTop').textContent = (name[0] || 'M').toUpperCase();
+
+  // fill absensi form name field if present
+  if($('absensiNama')) $('absensiNama').value = currentUser ? name : '';
+}
+
+/* ---------- Absensi form ---------- */
+function prepAbsensiForm(){
+  // set date & time
+  const now = new Date();
+  const tgl = now.toLocaleDateString('id-ID', { year:'numeric', month:'short', day:'numeric' });
+  const jam = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+  $('absensiTanggal').value = tgl;
+  $('absensiJam').value = jam;
+  $('absensiNote').textContent = '';
+
+  // preview file change
+  $('absensiBukti').value = '';
+  $('previewBukti').innerHTML = '';
+  $('absensiStatus').value = 'Hadir';
+}
+
+/* convert file to dataURL */
+function fileToDataUrl(file){
+  return new Promise((res,rej)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>res(reader.result);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitAbsensi(e){
+  e.preventDefault();
+  if(!currentUser) return alert('Silakan login dulu.');
+  // check if already submitted today by this user
+  const today = new Date().toLocaleDateString('id-ID');
+  const already = rekap.some(r => r.nama === currentUser.name && new Date(r.waktu).toLocaleDateString('id-ID') === new Date().toLocaleDateString('id-ID'));
+  if(already){
+    $('absensiNote').textContent = 'Kamu sudah mengirim absensi hari ini ✅';
+    return;
+  }
+
+  const mapel = $('absensiMapel').value.trim();
+  const status = $('absensiStatus').value;
+  const waktu = new Date().toLocaleString('id-ID', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const nama = currentUser.name;
+  const fileInput = $('absensiBukti');
+  let bukti = null;
+  if(fileInput.files && fileInput.files[0]){
+    try{
+      bukti = await fileToDataUrl(fileInput.files[0]);
+    }catch(err){
+      console.error(err);
     }
-    updateClock(); setInterval(updateClock,1000);
+  }
 
-    // --- ABSENSI ---
-    async function submitAbsen(e){
-      e.preventDefault();
-      const nama = SiswaName;
-      const kelas = document.getElementById('a_kelas').value.trim();
-      const status = document.getElementById('a_status').value;
-      const foto = document.getElementById('a_foto').files[0];
-      if(!status || !foto){showMsg('Isi semua field dan upload foto.');return;}
-      const today = new Date().toISOString().slice(0,10);
-      const rekap = read('rekap');
-      if(rekap.some(r=>r.role==='Siswa' && r.nama===nama && r.waktu.startsWith(today))){
-        showMsg('Kamu sudah absen hari ini.'); return;
-      }
-      const reader = new FileReader();
-      reader.onload = ()=>{
-        const entry={id:uid('absen'),role:'Siswa',nama,kelas,waktu:new Date().toISOString(),status,fotoData:reader.result};
-        rekap.push(entry); save('rekap',rekap);
-        document.getElementById('formAbsen').reset();
-        document.getElementById('a_nama').value=nama;
-        document.getElementById('btnAbsen').disabled=true;
-        document.getElementById('absenNote').textContent='✅ Kamu sudah absen hari ini.';
-        showMsg('Absensi berhasil dan dikirim ke admin.');
-        renderDashboard(); renderStat();
-      };
-      reader.readAsDataURL(foto);
-    }
+  const entry = { nama, role:'siswa', mapel: mapel||'', waktu, status, bukti };
+  rekap.push(entry);
+  localStorage.setItem('rekap', JSON.stringify(rekap));
+  $('absensiNote').textContent = 'Absensi terkirim ✅';
+  prepAbsensiForm();
+  renderMiniHistory();
+  renderDashboard(); // update cards & chart
+}
 
-    // --- RENDER FUNGS ---
-    function renderDashboard(){
-      const materi = read('materi'); const tugas = read('tugas'); const rekap = read('rekap');
-      document.getElementById('countMateri').textContent=materi.length;
-      document.getElementById('countTugas').textContent=tugas.length;
-      const today=new Date().toISOString().slice(0,10);
-      const hasAbsen=rekap.some(r=>r.role==='Siswa'&&r.nama===SiswaName&&r.waktu.startsWith(today));
-      document.getElementById('statusAbsen').textContent=hasAbsen?'Sudah Absen':'Belum Absen';
-      document.getElementById('statusAbsen').className=hasAbsen?'text-2xl font-bold mt-2 text-green-600':'text-2xl font-bold mt-2 text-red-600';
-      const jawaban=read('jawaban_tugas');
-      const done=jawaban.filter(j=>j.nama===SiswaName).length;
-      const progress=tugas.length?Math.round((done/tugas.length)*100):0;
-      document.getElementById('progressBar').style.width=progress+'%';
-      document.getElementById('progressText').textContent=`${progress}% tugas dikumpulkan`;
-    }
+/* preview file on selection */
+$('absensiBukti')?.addEventListener('change', async function(){
+  const f = this.files && this.files[0];
+  const p = $('previewBukti');
+  p.innerHTML = '';
+  if(!f) return;
+  if(f.type.startsWith('image/')){
+    const url = URL.createObjectURL(f);
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'file-thumb';
+    p.appendChild(img);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'small-muted';
+    el.textContent = `${f.name} (${Math.round(f.size/1024)} KB)`;
+    p.appendChild(el);
+  }
+});
 
-    function renderMateri(){
-      const list=read('materi').slice().reverse();
-      const search=document.getElementById('searchMateri').value.toLowerCase();
-      const el=document.getElementById('listMateri'); el.innerHTML='';
-      list.filter(m=>m.judul.toLowerCase().includes(search)||(m.mapel||'').toLowerCase().includes(search))
-        .forEach(m=>{
-          const li=document.createElement('li');
-          li.className='p-3 border rounded';
-          li.innerHTML=`<div class="font-semibold">${m.judul}</div>
-          <div class="text-xs text-gray-500">${m.mapel||''} • ${new Date(m.tanggal).toLocaleString('id-ID')}</div>
-          <div class="text-xs">${m.deskripsi||''}</div>`;
-          el.appendChild(li);
-        });
-    }
+/* reset */
+function resetAbsensiForm(){
+  $('absensiMapel').value = '';
+  $('absensiBukti').value = '';
+  $('previewBukti').innerHTML = '';
+  $('absensiNote').textContent = '';
+  prepAbsensiForm();
+}
 
-    function renderTugas(){
-      const list=read('tugas').slice().reverse();
-      const jawaban=read('jawaban_tugas');
-      const el=document.getElementById('listTugas'); el.innerHTML='';
-      list.forEach(t=>{
-        const sudah=jawaban.some(j=>j.id_tugas===t.id&&j.nama===SiswaName);
-        const div=document.createElement('div');
-        div.className='p-3 border rounded';
-        div.innerHTML=`<div class="font-semibold">${t.judul}</div>
-        <div class="text-xs text-gray-600">${t.deskripsi}</div>
-        <div class="text-xs text-gray-400 mt-1">Deadline: ${t.deadline}</div>
-        <div class="mt-2 flex items-center space-x-2">
-          <input type="file" id="file_${t.id}" ${sudah?'disabled':''} accept=".pdf,.docx,.jpg,.png,.zip" class="text-sm">
-          <button class="bg-indigo-600 text-white text-xs px-3 py-1 rounded" ${sudah?'disabled':''}
-            onclick="kumpulTugas('${t.id}')">${sudah?'✅ Sudah Dikirim':'Kirim Jawaban'}</button>
-        </div>`;
-        el.appendChild(div);
-      });
-    }
+/* ---------- Mini history & dashboard render ---------- */
+function renderMiniHistory(){
+  const hist = rekap.filter(r => r.nama === (currentUser?.name||'')).slice(-5).reverse();
+  const el = $('miniHistory');
+  el.innerHTML = '';
+  if(!hist.length) { el.innerHTML = '<div class="small-muted">Belum ada riwayat absensi.</div>'; return; }
+  hist.forEach(h=>{
+    const d = document.createElement('div');
+    d.innerHTML = `<div class="font-semibold">${h.waktu}</div><div class="small-muted">${h.mapel || '-'} • ${h.status}</div>`;
+    el.appendChild(d);
+  });
+}
 
-    function kumpulTugas(id){
-      const tugas=read('tugas').find(t=>t.id===id);
-      const fileInput=document.getElementById('file_'+id);
-      const file=fileInput.files[0];
-      if(!file){showMsg('Pilih file jawaban dulu.');return;}
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const jawaban=read('jawaban_tugas');
-        jawaban.push({id_tugas:id,nama:SiswaName,fileName:file.name,fileData:reader.result,tanggal:new Date().toISOString()});
-        save('jawaban_tugas',jawaban);
-        showMsg('Tugas berhasil dikumpulkan!');
-        renderTugas(); renderDashboard();
-      };
-      reader.readAsDataURL(file);
-    }
+/* ---------- Dashboard render (cards & chart) ---------- */
+let chart7 = null;
+function renderDashboard(){
+  // compute stats for current user
+  const my = rekap.filter(r=> r.nama === (currentUser?.name||''));
+  const hadirToday = my.filter(r=>{
+    try {
+      return new Date(r.waktu).toLocaleDateString('id-ID') === new Date().toLocaleDateString('id-ID');
+    } catch { return false; }
+  }).length;
+  $('card-hadir').textContent = hadirToday ? 'Hadir' : 'Belum';
+  const notHere = my.filter(r=> r.status === 'Alpha').length;
+  $('card-alpha').textContent = notHere;
+  const totalDays = Math.max(1,my.length);
+  const hadirCount = my.filter(r=> r.status==='Hadir' || r.status==='Terlambat').length;
+  const rate = Math.round((hadirCount/totalDays)*100) + '%';
+  $('card-rate').textContent = rate;
 
-    function renderStat(){
-      const rekap=read('rekap').filter(r=>r.role==='Siswa'&&r.nama===SiswaName);
-      const tbody=document.getElementById('tableStat'); tbody.innerHTML='';
-      rekap.slice().reverse().forEach(r=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${new Date(r.waktu).toLocaleDateString('id-ID')}</td>
-        <td>${new Date(r.waktu).toLocaleTimeString('id-ID')}</td>
-        <td>${r.status}</td>`;
-        tbody.appendChild(tr);
-      });
-      const hadir=rekap.filter(r=>r.status==='Hadir').length;
-      const izin=rekap.filter(r=>r.status==='Izin').length;
-      const sakit=rekap.filter(r=>r.status==='Sakit').length;
-      const alpha=rekap.filter(r=>r.status==='Alpha').length;
-      const ctx=document.getElementById('chartStat');
-      new Chart(ctx,{type:'doughnut',data:{labels:['Hadir','Izin','Sakit','Alpha'],datasets:[{data:[hadir,izin,sakit,alpha],backgroundColor:['#10b981','#f59e0b','#3b82f6','#ef4444']}]},options:{maintainAspectRatio:false}});
-    }
+  // prepare last 7 days counts
+  const labels = [];
+  const counts = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const label = d.toLocaleDateString('id-ID', { weekday:'short', day:'numeric' });
+    labels.push(label);
+    const cnt = my.filter(r=> {
+      try {
+        return new Date(r.waktu).toDateString() === d.toDateString();
+      } catch { return false; }
+    }).length;
+    counts.push(cnt);
+  }
 
-    // --- UTILITAS ---
-    function showTab(tab){
-      document.querySelectorAll('.tab').forEach(t=>t.classList.add('hidden'));
-      document.getElementById('tab-'+tab).classList.remove('hidden');
-    }
-    function logout(){
-      localStorage.removeItem('loginName');
-      showMsg('Logout berhasil.'); setTimeout(()=>window.location.href='login.html',1000);
-    }
-    function toggleDark(){document.body.classList.toggle('bg-gray-900');document.body.classList.toggle('text-white');}
+  // render chart
+  const ctx = $('chart7days').getContext('2d');
+  if(chart7) chart7.destroy();
+  chart7 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label:'Kehadiran (jumlah)', data: counts, backgroundColor:'#60a5fa' }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+  });
 
-    // --- INIT ---
-    ['rekap','materi','tugas','jawaban_tugas'].forEach(k=>{if(!localStorage.getItem(k))save(k,[]);});
-    renderDashboard(); renderMateri(); renderTugas(); renderStat();
-    showTab('dashboard');
-  </script>
+  renderMiniHistory();
+  renderAnnouncementsShort();
+}
+
+/* ---------- Full history ---------- */
+function renderFullHistory(){
+  const my = rekap.filter(r=> r.nama === (currentUser?.name||'')).reverse();
+  const el = $('fullHistory');
+  if(!my.length){ el.innerHTML = '<div class="small-muted">Belum ada data absensi.</div>'; return; }
+  el.innerHTML = my.map(r=> `<div class="mb-2"><div class="font-semibold">${r.waktu}</div><div class="small-muted">${r.mapel||'-'} • ${r.status}</div></div>`).join('');
+}
+
+/* ---------- Announcements (shared with admin) ---------- */
+function renderAnnouncementsShort(){
+  const ann = JSON.parse(localStorage.getItem('pengumuman')) || [];
+  const list = $('announcementsList');
+  list.innerHTML = '';
+  ann.slice(-5).reverse().forEach(a=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="font-semibold">${a.judul}</div><div class="small-muted text-sm">${new Date(a.tanggal).toLocaleString('id-ID')}</div>`;
+    list.appendChild(li);
+  });
+}
+function renderFullAnnouncements(){
+  const ann = JSON.parse(localStorage.getItem('pengumuman')) || [];
+  const el = $('fullAnnouncements');
+  el.innerHTML = '';
+  if(!ann.length) { el.innerHTML = '<div class="small-muted">Belum ada pengumuman.</div>'; return; }
+  ann.slice().reverse().forEach(a=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="font-semibold">${a.judul}</div><div class="small-muted">${a.isi}</div><div class="small-muted text-xs mt-1">${new Date(a.tanggal).toLocaleString('id-ID')}</div>`;
+    el.appendChild(li);
+  });
+}
+
+/* ---------- Tugas & Materi fetch from local JSON ---------- */
+async function fetchJsonSafe(url){
+  try {
+    const res = await fetch(url, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (err) {
+    console.warn('fetchJsonSafe', url, err);
+    return null;
+  }
+}
+
+async function loadTugas(){
+  const el = $('tugasList'); el.innerHTML = 'Memuat...';
+  const data = await fetchJsonSafe('tugas.json');
+  if(!data) {
+    el.innerHTML = '<div class="small-muted text-red-500">Gagal memuat tugas. Pastikan file <code>tugas.json</code> tersedia dan dijalankan lewat server lokal.</div>';
+    return;
+  }
+  if(!Array.isArray(data) || !data.length){ el.innerHTML = '<div class="small-muted">Belum ada tugas.</div>'; return; }
+  el.innerHTML = data.map(t=>{
+    return `<div class="p-3 border rounded"><div class="font-semibold">${t.judul}</div><div class="small-muted">${t.deskripsi || ''}</div><div class="small-muted text-xs mt-1">Batas: ${t.deadline || '-'}</div></div>`;
+  }).join('');
+}
+
+async function loadMateri(){
+  const el = $('materiList'); el.innerHTML = 'Memuat...';
+  const data = await fetchJsonSafe('materi.json');
+  if(!data) {
+    el.innerHTML = '<div class="small-muted text-red-500">Gagal memuat materi. Pastikan file <code>materi.json</code> tersedia dan dijalankan lewat server lokal.</div>';
+    return;
+  }
+  if(!Array.isArray(data) || !data.length){ el.innerHTML = '<div class="small-muted">Belum ada materi.</div>'; return; }
+  el.innerHTML = data.map(m=>{
+    const link = m.link ? `<a href="${m.link}" target="_blank" class="text-indigo-600">Buka materi</a>` : (m.file ? `<a href="${m.file}" target="_blank" class="text-indigo-600">Unduh file</a>` : '');
+    return `<div class="p-3 border rounded"><div class="font-semibold">${m.judul}</div><div class="small-muted">${m.deskripsi || ''}</div><div class="small-muted text-xs mt-1">${link}</div></div>`;
+  }).join('');
+}
+
+/* ---------- Init on load ---------- */
+(function init(){
+  if(!currentUser) {
+    openLogin();
+  } else {
+    applyUserToUI();
+    showPage('dashboard');
+  }
+
+  // initial renders (if user logged in)
+  renderAnnouncementsShort();
+  // ensure rekap loaded from storage (admin & murid share same key)
+  rekap = JSON.parse(localStorage.getItem('rekap')) || [];
+  renderDashboard();
+})();
+</script>
 </body>
 </html>

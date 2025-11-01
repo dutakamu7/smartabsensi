@@ -13,29 +13,49 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color:#f4f7f9; }
-    .icon-lg { font-size: 2rem; line-height:1; }
-    .empty-state { text-align:center; padding:2rem; color:#9ca3af; }
-    .modal-overlay { background-color: rgba(0,0,0,0.7); }
+    :root { --bg:#0f172a; --glass: rgba(255,255,255,0.06); }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#f3f6fb 0%, #eef2f7 100%); }
+    .icon-lg { font-size: 1.6rem; line-height:1; }
+    .modal-overlay { background-color: rgba(2,6,23,0.6); }
     button:disabled { opacity:0.6; cursor:not-allowed; }
-    /* Message box */
-    #message-box { position: fixed; right: 20px; bottom: 20px; z-index: 60; background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.25); opacity: 0; transition: opacity 240ms; }
+    #message-box { position: fixed; right: 20px; bottom: 20px; z-index: 60; background: #0b1220; color: #fff; padding: 12px 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(2,6,23,0.4); opacity: 0; transition: opacity 240ms; }
     #message-box.show { opacity: 1; }
+
+    /* card visuals */
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,252,0.98));
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(15,23,42,0.06);
+    }
+
+    /* improved table */
+    table th, table td { vertical-align: middle; }
+
+    /* make charts area fixed height to look better */
+    .chart-container { height: 260px; }
+    @media (min-width:1024px) { .chart-container { height: 320px; } }
+
+    /* subtle hover on rows */
+    tbody tr:hover { background: rgba(79,70,229,0.02); }
   </style>
 </head>
 <body class="min-h-screen flex">
 
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-900 text-white p-6 flex flex-col hidden md:block">
-    <h1 class="text-2xl font-extrabold mb-8 text-indigo-400">ADMIN PRESENSI</h1>
+  <aside class="w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white p-6 flex flex-col hidden md:block">
+    <div class="mb-8">
+      <h1 class="text-2xl font-extrabold tracking-tight text-white">ADMIN PRESENSI</h1>
+      <p class="text-xs text-slate-300 mt-1">Panel Manajemen Absensi Sekolah</p>
+    </div>
+
     <nav class="space-y-3 flex-grow">
-      <a href="#" class="flex items-center p-3 rounded-xl bg-indigo-600 font-semibold transition duration-200">
+      <a href="#" class="flex items-center p-3 rounded-xl bg-white/6 backdrop-blur-sm font-semibold transition duration-200">
         <span class="icon-lg mr-3">🏠</span> Dashboard
       </a>
-      <a href="#pengumuman" class="flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-200">
+      <a href="#pengumuman" class="flex items-center p-3 rounded-xl hover:bg-white/5 transition duration-200">
         <span class="icon-lg mr-3">📢</span> Pengumuman
       </a>
-      <a href="#rekap" class="flex items-center p-3 rounded-xl hover:bg-gray-700 transition duration-200">
+      <a href="#rekap" class="flex items-center p-3 rounded-xl hover:bg-white/5 transition duration-200">
         <span class="icon-lg mr-3">📄</span> Rekap Absensi
       </a>
 
@@ -44,80 +64,89 @@
         🧪 TEST: Tambah Data Demo
       </button>
     </nav>
+
+    <div class="mt-6 text-sm text-slate-300">
+      <p class="font-medium">Versi: Modern • Local</p>
+      <p class="mt-2 text-xs">Dilarang merubah struktur tanpa ijin.</p>
+    </div>
   </aside>
 
   <!-- MAIN -->
   <main class="flex-1 p-6 md:p-8 overflow-y-auto">
     <header class="flex justify-between items-center mb-6">
-      <h2 class="text-3xl font-bold text-gray-800">Dashboard Utama Absensi</h2>
+      <div>
+        <h2 class="text-3xl font-bold text-slate-900">Dashboard Utama Absensi</h2>
+        <p class="text-sm text-slate-600 mt-1">Ringkasan real-time data absensi (lokal)</p>
+      </div>
+
       <div class="flex items-center space-x-4">
-        <div class="text-sm text-gray-600 text-right">
-          <p class="font-bold text-gray-800">Duta Hilmy Pratama</p>
+        <div class="text-sm text-slate-600 text-right">
+          <p class="font-bold text-slate-900">Duta Hilmy Pratama</p>
           <p class="text-xs font-mono text-indigo-600">NIP: 101032530012</p>
           <p id="current-datetime" class="text-sm font-semibold mt-1"></p>
         </div>
-        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-semibold">Logout</button>
+        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold">Logout</button>
       </div>
     </header>
 
     <!-- KPI -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="bg-white p-5 rounded-2xl shadow-lg">
+      <div class="card p-5 rounded-2xl">
         <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-gray-500">Rata-Rata Hadir SISWA</p>
+          <p class="text-sm font-medium text-slate-500">Rata-Rata Hadir SISWA</p>
           <span class="icon-lg text-indigo-500">🧑‍🎓</span>
         </div>
-        <h3 id="kpi-kehadiran-siswa" class="text-4xl font-extrabold text-gray-900 mt-1">0.0%</h3>
-        <p id="kpi-siswa-desc" class="text-sm text-gray-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
+        <h3 id="kpi-kehadiran-siswa" class="text-3xl font-extrabold text-slate-900 mt-1">0.0%</h3>
+        <p id="kpi-siswa-desc" class="text-sm text-slate-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-lg">
+      <div class="card p-5 rounded-2xl">
         <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-gray-500">Rata-Rata Hadir GURU</p>
+          <p class="text-sm font-medium text-slate-500">Rata-Rata Hadir GURU</p>
           <span class="icon-lg text-blue-500">👨‍🏫</span>
         </div>
-        <h3 id="kpi-kehadiran-guru" class="text-4xl font-extrabold text-gray-900 mt-1">0.0%</h3>
-        <p id="kpi-guru-desc" class="text-sm text-gray-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
+        <h3 id="kpi-kehadiran-guru" class="text-3xl font-extrabold text-slate-900 mt-1">0.0%</h3>
+        <p id="kpi-guru-desc" class="text-sm text-slate-400 mt-2"><span class="font-semibold">Belum</span> Ada Data Absensi</p>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-lg">
+      <div class="card p-5 rounded-2xl">
         <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-gray-500">Total Alpha (Siswa) Hari Ini</p>
+          <p class="text-sm font-medium text-slate-500">Total Alpha (Siswa)</p>
           <span class="icon-lg text-red-500">❌</span>
         </div>
-        <h3 id="kpi-alpha" class="text-4xl font-extrabold text-gray-900 mt-1">0</h3>
-        <p class="text-sm text-gray-400 mt-2"><span class="font-semibold">0</span> Siswa Kritis</p>
+        <h3 id="kpi-alpha" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+        <p class="text-sm text-slate-400 mt-2"><span class="font-semibold">0</span> Siswa Kritis</p>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-lg">
+      <div class="card p-5 rounded-2xl">
         <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-gray-500">Total Pengajuan (Izin/Sakit)</p>
+          <p class="text-sm font-medium text-slate-500">Total Pengajuan (Izin/Sakit)</p>
           <span class="icon-lg text-yellow-500">📝</span>
         </div>
-        <h3 id="kpi-izin-pending" class="text-4xl font-extrabold text-gray-900 mt-1">0</h3>
-        <p class="text-sm text-gray-400 mt-2"><span class="font-semibold">0</span> Pengajuan</p>
+        <h3 id="kpi-izin-pending" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+        <p class="text-sm text-slate-400 mt-2"><span class="font-semibold">0</span> Pengajuan</p>
       </div>
     </div>
 
-   <!-- Charts -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-  <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-    <h3 class="text-xl font-bold mb-4">Tren Kehadiran Sekolah (Siswa & Guru)</h3>
-    <div class="chart-container">
-      <canvas id="kehadiranChart"></canvas>
-    </div>
-  </div>
-  <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
-    <h3 class="text-xl font-bold mb-4">Rekap Status Harian</h3>
-    <div class="chart-container">
-      <canvas id="statusChart"></canvas>
-    </div>
-  </div>
-</div>
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="lg:col-span-2 card p-6 rounded-2xl">
+        <h3 class="text-xl font-bold mb-4">Tren Kehadiran Sekolah (Siswa & Guru)</h3>
+        <div class="chart-container">
+          <canvas id="kehadiranChart"></canvas>
+        </div>
+      </div>
 
+      <div class="lg:col-span-1 card p-6 rounded-2xl">
+        <h3 class="text-xl font-bold mb-4">Rekap Status Harian</h3>
+        <div class="chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
 
     <!-- Tambah Pengguna -->
-    <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+    <div class="card p-6 rounded-2xl shadow-lg mb-8">
       <h3 class="text-xl font-bold text-green-600 mb-4 flex items-center"><span class="mr-2">➕</span>Manajemen Pengguna Baru</h3>
       <div class="flex space-x-2">
         <button onclick="openAddUserModal('siswa')" class="flex-1 bg-green-500 text-white py-2 rounded-xl">Siswa Baru</button>
@@ -126,8 +155,8 @@
     </div>
 
     <!-- Data Pengguna -->
-    <div class="bg-white p-6 rounded-2xl shadow-lg mb-8">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Data Pengguna Terdaftar (Siswa & Guru)</h3>
+    <div class="card p-6 rounded-2xl shadow-lg mb-8">
+      <h3 class="text-xl font-bold mb-4 text-slate-800">Data Pengguna Terdaftar (Siswa & Guru)</h3>
 
       <div id="emptyUsersState" class="empty-state">
         <span class="icon-lg block mb-2">📋</span>
@@ -152,7 +181,7 @@
     </div>
 
     <!-- Pengumuman -->
-    <section id="pengumuman" class="bg-white p-6 rounded-2xl shadow mb-8">
+    <section id="pengumuman" class="card p-6 rounded-2xl shadow mb-8">
       <h3 class="text-2xl font-bold text-indigo-600 mb-4 flex items-center"><span class="mr-2">📢</span> Kelola Pengumuman</h3>
       <form id="formPengumuman" onsubmit="tambahPengumuman(event)" class="space-y-3">
         <input type="text" id="judulPengumuman" placeholder="Judul pengumuman" class="w-full border p-2 rounded" required>
@@ -169,23 +198,26 @@
     </section>
 
     <!-- Rekap Absensi -->
-    <section id="rekap" class="bg-white p-6 rounded-2xl shadow mb-20">
+    <section id="rekap" class="card p-6 rounded-2xl shadow mb-20">
       <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center"><span class="mr-2">📊</span> Rekap Absensi</h3>
 
-      <table class="w-full border mb-4" id="tabelRekap">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Role</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Mata Pelajaran</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Waktu Absen</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-          </tr>
-        </thead>
-        <tbody id="rekapBody">
-          <tr><td colspan="5" class="text-center text-gray-400 py-6">Belum ada data absensi.</td></tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="w-full border mb-4" id="tabelRekap">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Role</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Mata Pelajaran</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Waktu Absen</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rekapBody">
+            <tr><td colspan="6" class="text-center text-gray-400 py-6">Belum ada data absensi.</td></tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="flex space-x-3">
         <button id="btnExcel" onclick="downloadExcel()" class="bg-green-600 text-white px-4 py-2 rounded-xl" disabled>Download Excel</button>
@@ -315,7 +347,6 @@
       closeUserModal();
       renderUsers();
       showMessage(`Pengguna ${name} (${role}) berhasil ditambahkan.`, 3500);
-      // update KPI/reports
       updateKPIandCharts();
     }
 
@@ -383,7 +414,7 @@
     function renderRekap() {
       rekapBody.innerHTML = '';
       if (!rekap || rekap.length === 0) {
-        rekapBody.innerHTML = "<tr><td colspan='5' class='text-center text-gray-400 py-6'>Belum ada data absensi.</td></tr>";
+        rekapBody.innerHTML = "<tr><td colspan='6' class='text-center text-gray-400 py-6'>Belum ada data absensi.</td></tr>";
         btnExcel.disabled = true;
         btnPDF.disabled = true;
         updateKPIandCharts();
@@ -393,14 +424,18 @@
       btnExcel.disabled = false;
       btnPDF.disabled = false;
 
-      rekap.forEach(entry => {
+      rekap.forEach((entry, idx) => {
         const tr = document.createElement('tr');
+        // build action button for delete (only front-end)
         tr.innerHTML = `
           <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHtml(entry.nama)}</td>
           <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${escapeHtml(entry.role)}</td>
           <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${escapeHtml(entry.mapel)}</td>
           <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${escapeHtml(entry.waktu)}</td>
           <td class="px-3 py-3 whitespace-nowrap text-sm ${entry.status === 'Hadir' ? 'text-green-600' : entry.status === 'Terlambat' ? 'text-yellow-600' : 'text-red-600'} font-semibold">${escapeHtml(entry.status)}</td>
+          <td class="px-3 py-3 whitespace-nowrap text-sm text-right">
+            <button onclick="hapusRekap(${idx})" class="px-2 py-1 bg-red-600 text-white rounded-md text-xs hover:bg-red-700">Hapus</button>
+          </td>
         `;
         rekapBody.appendChild(tr);
       });
@@ -409,15 +444,26 @@
     }
 
     function saveRekapEntry(entry) {
+      // ensure waktu always contains readable time (fallback to ISO)
+      entry.waktu = entry.waktu || new Date().toLocaleString('id-ID', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
       rekap.push(entry);
       localStorage.setItem('rekap', JSON.stringify(rekap));
       renderRekap();
       showMessage('Data absensi baru ditambahkan (lokal).', 2200);
     }
 
+    // Hapus rekap (frontend only) — sesuai permintaan: hapus dari tampilan/localStorage
+    function hapusRekap(index) {
+      if (!confirm('Yakin ingin menghapus data rekap ini?')) return;
+      // remove the item at index
+      const removed = rekap.splice(index, 1)[0];
+      localStorage.setItem('rekap', JSON.stringify(rekap));
+      renderRekap();
+      showMessage(`Rekap ${removed.nama} (${removed.role}) berhasil dihapus.`, 2500);
+    }
+
     /* Demo: tambahkan beberapa data absensi utk testing */
     function addMockAttendanceData() {
-      // contoh entry demo: ambil user terdaftar kalau ada, atau buat demo
       const now = new Date();
       const time = now.toLocaleString('id-ID', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
       const demo = [
@@ -439,9 +485,15 @@
     function downloadExcel() {
       if (!rekap || rekap.length === 0) return showMessage('Belum ada data rekap untuk diunduh.', 2500);
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(rekap.map(r => ({
-        Nama: r.nama, Role: r.role, Mata_Pelajaran: r.mapel, Waktu_Absen: r.waktu, Status: r.status
-      })));
+      // map explicitly to include waktu
+      const wsData = rekap.map(r => ({
+        Nama: r.nama,
+        Role: r.role,
+        Mata_Pelajaran: r.mapel,
+        Waktu_Absen: r.waktu,
+        Status: r.status
+      }));
+      const ws = XLSX.utils.json_to_sheet(wsData);
       XLSX.utils.book_append_sheet(wb, ws, 'Rekap Absensi');
       XLSX.writeFile(wb, `Rekap_Absensi_${new Date().toISOString().slice(0,10)}.xlsx`);
       showMessage('File Excel berhasil dibuat.', 2500);
@@ -478,7 +530,7 @@
         labels: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
         datasets: [
           { label: 'Kehadiran Siswa (%)', data: [90,88,92,95,90,89,93,94,91,95,94,92], borderColor: '#4f46e5', fill:false, tension:0.4 },
-          { label: 'Kehadiran Guru (%)', data: [98,97,99,98,100,99,98,97,99,100,98,99], borderColor: '#10b981', fill:false, tension:0.4 }
+          { label: 'Kehadiran Guru (%)', data: [98,97,99,98,100,99,98,97,99,100,98,99], borderColor: '#06b6d4', fill:false, tension:0.4 }
         ]
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}} }
@@ -486,7 +538,10 @@
 
     const statusChart = new Chart(document.getElementById('statusChart'), {
       type: 'doughnut',
-      data: { labels:['Hadir','Izin','Sakit','Alpha'], datasets:[{ data:[0,0,0,0], backgroundColor:['#10b981','#f59e0b','#3b82f6','#ef4444'] }] },
+      data: {
+        labels:['Hadir','Izin','Sakit','Alpha'],
+        datasets:[{ data:[0,0,0,0], backgroundColor:['#10b981','#f59e0b','#3b82f6','#ef4444'] }]
+      },
       options: { responsive:true, maintainAspectRatio:false }
     });
 
@@ -495,7 +550,7 @@
       const totalSiswa = users.filter(u => u.role === 'siswa').length;
       const totalGuru = users.filter(u => u.role === 'guru').length;
 
-      // Unique hadir counts (today's presence not implemented by date filter; using whole dataset)
+      // Unique hadir counts (using whole dataset)
       const hadirSiswa = rekap.filter(r => r.role === 'siswa' && (r.status === 'Hadir' || r.status === 'Terlambat')).length;
       const hadirGuru = rekap.filter(r => r.role === 'guru' && (r.status === 'Hadir' || r.status === 'Terlambat')).length;
       const alphaSiswa = rekap.filter(r => r.role === 'siswa' && r.status === 'Alpha').length;
@@ -508,8 +563,13 @@
       document.getElementById('kpi-kehadiran-siswa').textContent = `${rateSiswa}%`;
       document.getElementById('kpi-kehadiran-guru').textContent = `${rateGuru}%`;
 
-      document.getElementById('kpi-siswa-desc').innerHTML = totalSiswa > 0 ? `<span class="font-semibold">${Math.max(0,totalSiswa - hadirSiswa)}</span> Siswa Tidak Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
-      document.getElementById('kpi-guru-desc').innerHTML = totalGuru > 0 ? `<span class="font-semibold">${Math.max(0,totalGuru - hadirGuru)}</span> Guru Tidak Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
+      // Update description text per requirement:
+      // If there is data for users, show "X Siswa Hadir" / "X Guru Hadir"; else "Belum Ada Data Absensi"
+      document.getElementById('kpi-siswa-desc').innerHTML =
+        totalSiswa > 0 ? `<span class="font-semibold">${hadirSiswa}</span> Siswa Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
+
+      document.getElementById('kpi-guru-desc').innerHTML =
+        totalGuru > 0 ? `<span class="font-semibold">${hadirGuru}</span> Guru Hadir` : '<span class="font-semibold">Belum</span> Ada Data Absensi';
 
       document.getElementById('kpi-alpha').textContent = alphaSiswa.toString();
       document.getElementById('kpi-izin-pending').textContent = izinCount.toString();
@@ -517,6 +577,10 @@
       // Update donut chart with current counts
       statusChart.data.datasets[0].data = [hadirSiswa, izinCount, sakitCount, alphaSiswa];
       statusChart.update();
+
+      // disable download buttons if no rekap
+      btnExcel.disabled = !(rekap && rekap.length > 0);
+      btnPDF.disabled = !(rekap && rekap.length > 0);
     }
 
     /* -------------------------
@@ -539,9 +603,6 @@
     renderPengumuman();
     renderRekap();
     updateKPIandCharts();
-
-    // Ensure charts reflect initial rekap counts
-    // (statusChart updated inside updateKPIandCharts)
   </script>
 </body>
 </html>
