@@ -14,9 +14,7 @@
     body { font-family: 'Inter', sans-serif; background:#f4f7f9; }
     .card { background:white; border-radius:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); }
     .small { font-size:0.85rem; color:#6b7280; }
-    .required { color:#ef4444; margin-left:4px; }
-    .chart-container { height:300px; position:relative; }
-    input[type=file] { font-size:0.9rem; }
+    .hidden { display:none; }
   </style>
 </head>
 <body class="min-h-screen flex">
@@ -29,11 +27,7 @@
       <button onclick="showTab('tugas')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Kirim Tugas</button>
       <button onclick="showTab('materi')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Upload Materi</button>
       <button onclick="showTab('absen')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Absensi Manual</button>
-      <button onclick="showTab('statistik')" class="w-full text-left p-3 rounded-xl hover:bg-gray-800">Statistik Absensi</button>
-      <div class="mt-6">
-        <button onclick="logout()" class="w-full bg-red-500 hover:bg-red-600 p-3 rounded-xl font-semibold">Logout</button>
-        <button id="darkToggle" onclick="toggleDark()" class="w-full mt-3 bg-gray-700 hover:bg-gray-600 p-2 rounded-xl text-sm">Toggle Dark Mode</button>
-      </div>
+      <button onclick="logoutGuru()" class="w-full mt-6 bg-red-500 hover:bg-red-600 p-3 rounded-xl font-semibold">Logout</button>
     </nav>
   </aside>
 
@@ -50,211 +44,184 @@
       </div>
     </header>
 
-    <!-- CONTENT TABS -->
+    <!-- DASHBOARD -->
     <section id="tab-dashboard" class="tab card p-6 mb-6">
       <h3 class="text-xl font-bold mb-4">Ringkasan Hari Ini</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="p-4 card">
-          <p class="small">Jumlah Tugas Terkirim</p>
-          <h3 id="countTugas" class="text-2xl font-bold mt-2">0</h3>
-        </div>
-        <div class="p-4 card">
-          <p class="small">Materi Terbaru</p>
-          <h3 id="countMateri" class="text-2xl font-bold mt-2">0</h3>
-        </div>
-        <div class="p-4 card">
-          <p class="small">Absen Hari Ini</p>
-          <h3 id="countAbsenToday" class="text-2xl font-bold mt-2">0</h3>
-        </div>
-      </div>
-
-      <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card p-4">
-          <h4 class="font-semibold mb-2">Grafik Kehadiran Bulanan</h4>
-          <div class="chart-container">
-            <canvas id="chartKehadiran"></canvas>
-          </div>
-        </div>
-        <div class="card p-4">
-          <h4 class="font-semibold mb-2">Pengumuman / Notifikasi</h4>
-          <div id="notifList" class="text-sm small space-y-2"></div>
-        </div>
+        <div class="p-4 card"><p class="small">Jumlah Tugas Terkirim</p><h3 id="countTugas" class="text-2xl font-bold mt-2">0</h3></div>
+        <div class="p-4 card"><p class="small">Materi Terbaru</p><h3 id="countMateri" class="text-2xl font-bold mt-2">0</h3></div>
+        <div class="p-4 card"><p class="small">Absen Hari Ini</p><h3 id="countAbsenToday" class="text-2xl font-bold mt-2">0</h3></div>
       </div>
     </section>
 
     <!-- KIRIM TUGAS -->
     <section id="tab-tugas" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Kirim Tugas ke Murid</h3>
-      <form id="formTugas" class="space-y-4" onsubmit="submitTugas(event)">
-        <div>
-          <label class="block font-medium">Judul <span class="required">*</span></label>
-          <input id="t_judul" class="w-full border p-2 rounded" required>
-        </div>
-        <div>
-          <label class="block font-medium">Deskripsi <span class="required">*</span></label>
-          <textarea id="t_deskripsi" class="w-full border p-2 rounded" rows="4" required></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-medium">Deadline <span class="required">*</span></label>
-            <input id="t_deadline" type="datetime-local" class="w-full border p-2 rounded" required>
-          </div>
-          <div>
-            <label class="block font-medium">Lampirkan File (PDF/DOCX/JPG/PNG) </label>
-            <input id="t_file" type="file" accept=".pdf,.docx,image/*" class="w-full">
-          </div>
-        </div>
-        <div class="flex items-center space-x-3">
-          <button class="bg-indigo-600 text-white px-4 py-2 rounded" type="submit">Kirim Tugas</button>
-          <button type="button" class="bg-gray-200 px-4 py-2 rounded" onclick="resetTugas()">Reset</button>
-        </div>
+      <h3 class="text-xl font-bold mb-4">Kirim Tugas ke Siswa</h3>
+      <form id="formTugas" class="space-y-3">
+        <input id="tugasMapel" type="text" class="w-full border p-2 rounded" placeholder="Mata Pelajaran" required>
+        <textarea id="tugasDeskripsi" class="w-full border p-2 rounded" placeholder="Deskripsi tugas..." required></textarea>
+        <input id="tugasFile" type="file" class="w-full border p-2 rounded" required>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Kirim</button>
       </form>
-
-      <div class="mt-6">
-        <h4 class="font-semibold mb-2">Tugas Terkirim (Terbaru)</h4>
-        <ul id="listTugas" class="space-y-3 small"></ul>
-      </div>
     </section>
 
     <!-- UPLOAD MATERI -->
     <section id="tab-materi" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Upload Materi Pembelajaran</h3>
-      <form id="formMateri" onsubmit="submitMateri(event)" class="space-y-4">
-        <div>
-          <label class="block font-medium">Mapel <span class="required">*</span></label>
-          <input id="m_mapel" class="w-full border p-2 rounded" required>
-        </div>
-        <div>
-          <label class="block font-medium">Judul Materi <span class="required">*</span></label>
-          <input id="m_judul" class="w-full border p-2 rounded" required>
-        </div>
-        <div>
-          <label class="block font-medium">Deskripsi / Catatan</label>
-          <textarea id="m_deskripsi" class="w-full border p-2 rounded" rows="3"></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-medium">File Materi (PDF / PPT / JPG / PNG / MP4)</label>
-            <input id="m_file" type="file" accept=".pdf,.ppt,.pptx,image/*,video/mp4" class="w-full">
-          </div>
-          <div>
-            <label class="block font-medium">Atau link YouTube</label>
-            <input id="m_link" placeholder="https://youtube.com/..." class="w-full border p-2 rounded">
-          </div>
-        </div>
-        <div class="flex items-center space-x-3">
-          <button class="bg-indigo-600 text-white px-4 py-2 rounded" type="submit">Upload Materi</button>
-          <button type="button" class="bg-gray-200 px-4 py-2 rounded" onclick="resetMateri()">Reset</button>
-        </div>
+      <h3 class="text-xl font-bold mb-4">Upload Materi</h3>
+      <form id="formMateri" class="space-y-3">
+        <input id="materiMapel" type="text" class="w-full border p-2 rounded" placeholder="Mata Pelajaran" required>
+        <input id="materiKeterangan" type="text" class="w-full border p-2 rounded" placeholder="Keterangan Materi" required>
+        <input id="materiFile" type="file" class="w-full border p-2 rounded" required>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</button>
       </form>
-
-      <div class="mt-6">
-        <h4 class="font-semibold mb-2">Materi Terbaru</h4>
-        <ul id="listMateri" class="space-y-3 small"></ul>
-      </div>
     </section>
 
     <!-- ABSENSI MANUAL -->
     <section id="tab-absen" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Input Absensi Manual</h3>
-
-      <form id="formAbsen" onsubmit="submitAbsen(event)" class="space-y-4">
-        <div>
-          <label class="block font-medium">Nama Guru</label>
-          <input id="a_nama" class="w-full border p-2 rounded bg-gray-50" readonly>
-        </div>
-        <div>
-          <label class="block font-medium">Mata Pelajaran <span class="required">*</span></label>
-          <input id="a_mapel" class="w-full border p-2 rounded" required>
-        </div>
-        <div class="grid grid-cols-3 gap-3 items-end">
-          <div>
-            <label class="block font-medium">Jam Absen</label>
-            <input id="a_waktu" class="w-full border p-2 rounded bg-gray-50" readonly>
-          </div>
-          <div>
-            <label class="block font-medium">Status <span class="required">*</span></label>
-            <select id="a_status" class="w-full border p-2 rounded" required>
-              <option value="">Pilih...</option>
-              <option>Hadir</option>
-              <option>Terlambat</option>
-              <option>Izin</option>
-              <option>Sakit</option>
-              <option>Alpha</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-medium">Foto Bukti (jpg/png) <span class="required">*</span></label>
-            <input id="a_foto" type="file" accept="image/*" class="w-full" required>
-          </div>
-        </div>
-
-        <div class="flex items-center space-x-3">
-          <button id="btnAbsenNow" class="bg-green-600 text-white px-4 py-2 rounded" type="button" onclick="markNow()">Absen Sekarang</button>
-          <button id="btnSimpanAbsen" class="bg-indigo-600 text-white px-4 py-2 rounded" type="submit" disabled>Simpan Absensi</button>
-          <button type="button" class="bg-gray-200 px-4 py-2 rounded" onclick="resetAbsen()">Reset</button>
-        </div>
+      <h3 class="text-xl font-bold mb-4">Absensi Manual Guru</h3>
+      <form id="formAbsen" class="space-y-3">
+        <input id="absenNama" type="text" class="w-full border p-2 rounded bg-gray-100" readonly>
+        <input id="absenMapel" type="text" class="w-full border p-2 rounded" placeholder="Mata Pelajaran Hari Ini" required>
+        <input id="absenJam" type="text" class="w-full border p-2 rounded bg-gray-100" readonly>
+        <label class="block">Unggah Bukti Kehadiran (foto):</label>
+        <input id="absenFile" type="file" accept="image/*" class="w-full border p-2 rounded" required>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Kirim Absensi</button>
       </form>
-
-      <div class="mt-6">
-        <h4 class="font-semibold mb-2">Riwayat Absensi Guru (Terbaru)</h4>
-        <table class="w-full text-sm small">
-          <thead class="text-left text-xs text-gray-500"><tr><th>Nama</th><th>Mapel</th><th>Waktu</th><th>Status</th></tr></thead>
-          <tbody id="listAbsen"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- STATISTIK ABSENSI -->
-    <section id="tab-statistik" class="tab hidden card p-6 mb-6">
-      <h3 class="text-xl font-bold mb-4">Statistik Absensi Guru</h3>
-      <div class="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-        <div class="flex items-center space-x-2">
-          <label class="small">Filter Tanggal</label>
-          <input id="filterFrom" type="date" class="border p-2 rounded">
-          <input id="filterTo" type="date" class="border p-2 rounded">
-        </div>
-        <div class="flex items-center space-x-2 mt-3 md:mt-0">
-          <input id="searchStat" placeholder="Cari nama atau mapel..." class="border p-2 rounded">
-          <button onclick="applyFilter()" class="bg-indigo-600 text-white px-3 py-2 rounded">Cari</button>
-          <button onclick="clearFilter()" class="bg-gray-200 px-3 py-2 rounded">Reset</button>
-        </div>
-      </div>
-      <div class="mb-4 card p-4">
-        <h4 class="font-semibold mb-2">Grafik Persentase Kehadiran (Bulan)</h4>
-        <div class="chart-container"><canvas id="statChart"></canvas></div>
-      </div>
-      <div class="mt-4">
-        <h4 class="font-semibold mb-2">Tabel Absensi</h4>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm small">
-            <thead class="text-left text-xs text-gray-500"><tr><th>Nama</th><th>Mapel</th><th>Waktu</th><th>Status</th></tr></thead>
-            <tbody id="tableStat"></tbody>
-          </table>
-        </div>
-      </div>
     </section>
   </main>
 
   <div id="msgBox" class="fixed right-6 bottom-6 p-4 rounded shadow-lg bg-gray-900 text-white opacity-0 transition-opacity"></div>
 
   <script>
-    // 🔧 Ubahan utama ada di bagian ini
+    /* ---------------- LOGIN CHECK ---------------- */
     function getLoggedGuru() {
-      return localStorage.getItem('loginName') || null;
+      const guruData = localStorage.getItem('loginGuru');
+      if (!guruData) return null;
+      try { return JSON.parse(guruData); } catch { return { nama: guruData }; }
+    }
+    const guru = getLoggedGuru();
+    if (!guru || !guru.nama) {
+      alert('Anda belum login sebagai guru. Mengarahkan ke halaman login...');
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('welcome').textContent = `Halo, ${guru.nama} — selamat datang.`;
+      document.getElementById('absenNama').value = guru.nama;
     }
 
-    const guruName = getLoggedGuru();
-    if (!guruName) {
-      alert('Anda belum login sebagai guru. Mengarahkan ke halaman login...');
+    /* ---------------- TABS ---------------- */
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.getElementById('pageTitle').textContent = tab.charAt(0).toUpperCase() + tab.slice(1) + ' Guru';
+    }
+
+    /* ---------------- ABSEN MANUAL ---------------- */
+    document.getElementById('absenJam').value = new Date().toLocaleTimeString('id-ID');
+
+    document.getElementById('formAbsen').addEventListener('submit', e => {
+      e.preventDefault();
+      const mapel = document.getElementById('absenMapel').value.trim();
+      const file = document.getElementById('absenFile').files[0];
+      if (!file) return alert('Harap unggah foto absensi.');
+
+      const absenData = JSON.parse(localStorage.getItem('absenGuru')) || [];
+      absenData.push({
+        namaGuru: guru.nama,
+        mapel,
+        jamAbsen: new Date().toLocaleTimeString('id-ID'),
+        tanggal: new Date().toLocaleDateString('id-ID'),
+        buktiFoto: file.name
+      });
+      localStorage.setItem('absenGuru', JSON.stringify(absenData));
+      alert('Absensi terkirim!');
+      document.getElementById('formAbsen').reset();
+      updateDashboard();
+    });
+
+    /* ---------------- KIRIM TUGAS ---------------- */
+    document.getElementById('formTugas').addEventListener('submit', e => {
+      e.preventDefault();
+      const mapel = document.getElementById('tugasMapel').value.trim();
+      const deskripsi = document.getElementById('tugasDeskripsi').value.trim();
+      const file = document.getElementById('tugasFile').files[0];
+      if (!file) return alert('Harap pilih file tugas.');
+
+      const tugasData = JSON.parse(localStorage.getItem('tugasData')) || [];
+      tugasData.push({
+        namaGuru: guru.nama,
+        mapel,
+        deskripsi,
+        fileName: file.name,
+        waktu: new Date().toLocaleString('id-ID')
+      });
+      localStorage.setItem('tugasData', JSON.stringify(tugasData));
+      alert('Tugas berhasil dikirim!');
+      document.getElementById('formTugas').reset();
+      updateDashboard();
+    });
+
+    /* ---------------- UPLOAD MATERI ---------------- */
+    document.getElementById('formMateri').addEventListener('submit', e => {
+      e.preventDefault();
+      const mapel = document.getElementById('materiMapel').value.trim();
+      const keterangan = document.getElementById('materiKeterangan').value.trim();
+      const file = document.getElementById('materiFile').files[0];
+      if (!file) return alert('Harap pilih file materi.');
+
+      const materiData = JSON.parse(localStorage.getItem('materiData')) || [];
+      materiData.push({
+        namaGuru: guru.nama,
+        mapel,
+        keterangan,
+        fileName: file.name,
+        waktu: new Date().toLocaleString('id-ID')
+      });
+      localStorage.setItem('materiData', JSON.stringify(materiData));
+      alert('Materi berhasil diupload!');
+      document.getElementById('formMateri').reset();
+      updateDashboard();
+    });
+
+    /* ---------------- DASHBOARD COUNTER ---------------- */
+async function updateDashboard() {
+  try {
+    const [tugasRes, materiRes, absenRes] = await Promise.all([
+      fetch('tugas.json'),
+      fetch('materi.json'),
+      fetch('absen_guru.json') // opsional kalau kamu buat juga absennya
+    ]);
+
+    const tugasData = await tugasRes.json().catch(() => []);
+    const materiData = await materiRes.json().catch(() => []);
+    const absenData = await absenRes.json().catch(() => []);
+
+    const tugasCount = tugasData.filter(t => t.namaGuru === guru.nama).length;
+    const materiCount = materiData.filter(m => m.namaGuru === guru.nama).length;
+    const absenCount = absenData.filter(a => a.namaGuru === guru.nama && a.tanggal === new Date().toLocaleDateString('id-ID')).length;
+
+    document.getElementById('countTugas').textContent = tugasCount;
+    document.getElementById('countMateri').textContent = materiCount;
+    document.getElementById('countAbsenToday').textContent = absenCount;
+  } catch (err) {
+    console.error('Gagal membaca data dashboard:', err);
+  }
+}
+    /* ---------------- LOGOUT ---------------- */
+    function logoutGuru() {
+      localStorage.removeItem('loginGuru');
       window.location.href = 'login.html';
     }
 
-    // Isi otomatis nama dan teks sapaan
-    document.getElementById('welcome').textContent = `Halo, ${guruName} — selamat datang.`;
-    document.getElementById('a_nama').value = guruName;
+    /* ---------------- JAM REALTIME ---------------- */
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
+      document.getElementById('today').textContent = now.toLocaleDateString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }, 1000);
 
-    // (semua fungsi lain tetap sama seperti sebelumnya)
+    updateDashboard();
   </script>
 </body>
 </html>

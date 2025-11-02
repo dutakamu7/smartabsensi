@@ -143,34 +143,46 @@
       idInput.focus();
     }
 
-    // ⚙️ Logika login
-    function handleLogin() {
-      const role = document.getElementById('selectedRole').value;
-      const id = document.getElementById('id_peserta').value.trim();
-      const name = document.getElementById('nama_lengkap').value.trim();
-      const pass = document.getElementById('password').value;
-      const UNIVERSAL = 'Telkom University Bandung';
-      const subj = document.getElementById('subject')?.value || '';
+   // ⚙️ Logika login
+function handleLogin() {
+  const role = document.getElementById('selectedRole').value;
+  const id = document.getElementById('id_peserta').value.trim();
+  const name = document.getElementById('nama_lengkap').value.trim();
+  const pass = document.getElementById('password').value;
+  const UNIVERSAL = 'Telkom University Bandung';
+  const subj = document.getElementById('subject')?.value || '';
 
-      if (role === 'admin' && id === '101032530012' && name.toLowerCase() === 'duta hilmy pratama' && pass === UNIVERSAL) {
-        showMessage('Login Berhasil sebagai ADMIN...', 1000);
-        return setTimeout(() => window.location.assign('admin.html'), 1000);
-      }
+  // ✅ Login Admin
+  if (role === 'admin' && id === '101032530012' && name.toLowerCase() === 'duta hilmy pratama' && pass === UNIVERSAL) {
+    showMessage('Login Berhasil sebagai ADMIN...', 1000);
+    localStorage.setItem('loginAdmin', JSON.stringify({ nama: name }));
+    return setTimeout(() => window.location.assign('admin.html'), 1000);
+  }
 
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(u => u.code === id);
+  // ✅ Cek user dari localStorage
+  const users = JSON.parse(localStorage.getItem('users')) || [];
+  const user = users.find(u => u.code === id);
 
-      if (!user) return showMessage(`Login Gagal: ID ${id} belum terdaftar.`, 4000);
-      if (user.name.toLowerCase() !== name.toLowerCase()) return showMessage(`Nama tidak sesuai.`, 4000);
-      if (user.role !== role) return showMessage(`ID ini terdaftar sebagai ${user.role.toUpperCase()}.`, 4000);
-      if (pass !== UNIVERSAL) return showMessage(`Password salah.`, 4000);
-      if (role !== 'admin' && !subj) return showMessage(`Silakan pilih Mata Pelajaran.`, 4000);
+  if (!user) return showMessage(`Login Gagal: ID ${id} belum terdaftar.`, 4000);
+  if (user.name.toLowerCase() !== name.toLowerCase()) return showMessage(`Nama tidak sesuai.`, 4000);
+  if (user.role !== role) return showMessage(`ID ini terdaftar sebagai ${user.role.toUpperCase()}.`, 4000);
+  if (pass !== UNIVERSAL) return showMessage(`Password salah.`, 4000);
+  if (role !== 'admin' && !subj) return showMessage(`Silakan pilih Mata Pelajaran.`, 4000);
 
-      const dashboard = role === 'guru' ? 'guru.html' : 'murid.html';
-      showMessage(`Login Berhasil sebagai ${user.name} (${role.toUpperCase()})...`, 1000);
-      setTimeout(() => window.location.assign(dashboard), 1000);
-    }
+  const dashboard = role === 'guru' ? 'guru.html' : 'murid.html';
+  showMessage(`Login Berhasil sebagai ${user.name} (${role.toUpperCase()})...`, 1000);
 
+  // ✅ Simpan data login agar tidak minta login lagi
+  if (role === 'guru') {
+    localStorage.setItem('loginGuru', JSON.stringify({ nama: user.name }));
+  } else if (role === 'siswa') {
+    localStorage.setItem('loginSiswa', JSON.stringify({ nama: user.name }));
+  }
+
+  setTimeout(() => window.location.assign(dashboard), 1000);
+}
+
+setTimeout(() => window.location.assign(dashboard), 1000);
     window.onload = function () {
       selectRole('siswa');
       updateClock();
